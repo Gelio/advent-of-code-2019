@@ -1,7 +1,15 @@
 use std::io;
 
 fn main() {
-    let mut sum: i64 = 0;
+    let masses = parse_numbers();
+
+    let sum: i64 = masses.into_iter().map(get_total_fuel_required).sum();
+
+    println!("Sum: {}", sum);
+}
+
+fn parse_numbers() -> Vec<i64> {
+    let mut numbers: Vec<i64> = Vec::new();
 
     loop {
         let mut line = String::new();
@@ -15,11 +23,11 @@ fn main() {
             break;
         }
 
-        let mass = trimmed_line.parse::<i64>().expect("Not a valid number");
-        sum += get_total_fuel_required(mass);
+        let number = trimmed_line.parse::<i64>().expect("Not a valid number");
+        numbers.push(number);
     }
 
-    println!("Sum: {}", sum);
+    numbers
 }
 
 fn get_fuel_required(mass: i64) -> i64 {
