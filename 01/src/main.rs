@@ -1,7 +1,7 @@
 use std::io;
 
 fn main() {
-    let mut sum: i32 = 0;
+    let mut sum: i64 = 0;
 
     loop {
         let mut line = String::new();
@@ -15,13 +15,29 @@ fn main() {
             break;
         }
 
-        let mass = trimmed_line.parse::<i32>().expect("Not a valid number");
-        sum += get_fuel_required(mass);
+        let mass = trimmed_line.parse::<i64>().expect("Not a valid number");
+        sum += get_total_fuel_required(mass);
     }
 
     println!("Sum: {}", sum);
 }
 
-fn get_fuel_required(mass: i32) -> i32 {
-    return mass / 3 - 2;
+fn get_fuel_required(mass: i64) -> i64 {
+    mass / 3 - 2
+}
+
+fn get_total_fuel_required(initial_mass: i64) -> i64 {
+    let mut mass = initial_mass;
+    let mut sum = 0;
+
+    while mass > 0 {
+        let fuel_for_mass = get_fuel_required(mass);
+        if fuel_for_mass <= 0 {
+            break;
+        }
+        sum += fuel_for_mass;
+        mass = fuel_for_mass;
+    }
+
+    sum
 }
