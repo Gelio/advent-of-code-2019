@@ -10,9 +10,20 @@ fn main() {
         .map(|x| x.parse().expect("Cannot parse number"))
         .collect();
 
-    let result = perform_computation(&memory, 12, 2);
+    let target_result = 19690720;
 
-    println!("At first memory address: {}", result);
+    for noun in 0..99 {
+        for verb in 0..99 {
+            let result = perform_computation(&memory, noun, verb);
+
+            if result == target_result {
+                let answer = 100 * noun + verb;
+
+                println!("The answer: {}", answer);
+                return;
+            }
+        }
+    }
 }
 
 fn step(memory: &mut Vec<usize>, instruction_pointer: &mut usize) -> bool {
