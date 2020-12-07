@@ -1,24 +1,23 @@
 package main
 
 import (
-	"bufio"
+	"aoc-2020/internal/stdin"
+	"aoc-2020/internal/testcases"
 	"fmt"
-	"io"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
 func main() {
-	lines, err := readAllLines()
+	lines, err := stdin.ReadAllLines()
 
 	if err != nil {
 		fmt.Println("Error while reading input", err)
 		return
 	}
 
-	passportLines := getPassportLines(lines)
+	passportLines := testcases.SplitTestCaseLines(lines)
 
 	validPassports := 0
 
@@ -36,49 +35,6 @@ func main() {
 	}
 
 	fmt.Println("Result: ", validPassports)
-}
-
-func readAllLines() (lines []string, err error) {
-	reader := bufio.NewReader(os.Stdin)
-	var line string
-
-	for {
-		line, err = reader.ReadString('\n')
-
-		if err != nil {
-			if err == io.EOF {
-				err = nil
-				break
-			}
-
-			return
-		}
-
-		line = strings.TrimSpace(line)
-		lines = append(lines, line)
-	}
-
-	return
-}
-
-func getPassportLines(lines []string) (passports [][]string) {
-	var currentPassport []string
-
-	for _, line := range lines {
-		if line == "" {
-			passports = append(passports, currentPassport)
-			currentPassport = make([]string, 0)
-			continue
-		}
-
-		currentPassport = append(currentPassport, line)
-	}
-
-	if len(currentPassport) > 0 {
-		passports = append(passports, currentPassport)
-	}
-
-	return
 }
 
 func parsePassportFields(passportLines []string) (passportFields map[string]string, err error) {
