@@ -4,6 +4,8 @@ import (
 	"aoc-2020/internal/stdin"
 	"aoc-2020/internal/testcases"
 	"fmt"
+
+	"github.com/golang-collections/collections/set"
 )
 
 func main() {
@@ -27,55 +29,41 @@ func main() {
 }
 
 func countUniqueLettersInLines(lines []string) int {
-	letterFound := make(map[rune]bool)
+	var lettersSet *set.Set
 
 	for _, line := range lines {
-		for _, char := range line {
-			letterFound[char] = true
+		currentLineLettersSet := getLettersSet(line)
+		if lettersSet == nil {
+			lettersSet = currentLineLettersSet
+		} else {
+			lettersSet = lettersSet.Union(currentLineLettersSet)
 		}
 	}
 
-	return len(letterFound)
+	return lettersSet.Len()
 }
 
-func getLettersSet(line string) (s map[rune]bool) {
-	s = make(map[rune]bool)
+func getLettersSet(line string) *set.Set {
+	s := set.New()
 
 	for _, char := range line {
-		s[char] = true
+		s.Insert(char)
 	}
 
-	return
-}
-
-func intersectSets(sets []map[rune]bool) (r map[rune]bool) {
-	r = make(map[rune]bool)
-
-	if len(sets) == 0 {
-		return
-	}
-
-	for char := range sets[0] {
-		r[char] = true
-	}
-
-	for _, set := range sets[1:] {
-		for char := range r {
-			if ok := set[char]; !ok {
-				delete(r, char)
-			}
-		}
-	}
-
-	return
+	return s
 }
 
 func countLettersAppearingInAllLines(lines []string) int {
-	var letterSets []map[rune]bool
+	var lettersSet *set.Set
 
 	for _, line := range lines {
-		letterSets = append(letterSets, getLettersSet(line))
+		currentLineLettersSet := getLettersSet(line)
+		if lettersSet == nil {
+			lettersSet = currentLineLettersSet
+		} else {
+			lettersSet = lettersSet.Intersection(currentLineLettersSet)
+		}
 	}
 
-	return len(intersectSets(letterSets))
+	return lettersSet.Len()
 }
