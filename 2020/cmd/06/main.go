@@ -14,13 +14,16 @@ func main() {
 
 	testcases := testcases.SplitTestCaseLines(lines)
 
-	sum := 0
+	sumA := 0
+	sumB := 0
 
 	for _, testcase := range testcases {
-		sum += countUniqueLettersInLines(testcase)
+		sumA += countUniqueLettersInLines(testcase)
+		sumB += countLettersAppearingInAllLines(testcase)
 	}
 
-	fmt.Println("Result:", sum)
+	fmt.Println("Result A:", sumA)
+	fmt.Println("Result B:", sumB)
 }
 
 func countUniqueLettersInLines(lines []string) int {
@@ -33,4 +36,46 @@ func countUniqueLettersInLines(lines []string) int {
 	}
 
 	return len(letterFound)
+}
+
+func getLettersSet(line string) (s map[rune]bool) {
+	s = make(map[rune]bool)
+
+	for _, char := range line {
+		s[char] = true
+	}
+
+	return
+}
+
+func intersectSets(sets []map[rune]bool) (r map[rune]bool) {
+	r = make(map[rune]bool)
+
+	if len(sets) == 0 {
+		return
+	}
+
+	for char := range sets[0] {
+		r[char] = true
+	}
+
+	for _, set := range sets[1:] {
+		for char := range r {
+			if ok := set[char]; !ok {
+				delete(r, char)
+			}
+		}
+	}
+
+	return
+}
+
+func countLettersAppearingInAllLines(lines []string) int {
+	var letterSets []map[rune]bool
+
+	for _, line := range lines {
+		letterSets = append(letterSets, getLettersSet(line))
+	}
+
+	return len(intersectSets(letterSets))
 }
