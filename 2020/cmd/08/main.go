@@ -13,12 +13,24 @@ func main() {
 	}
 
 	var result int
-	result, err = SolveA(lines)
+	{
+		result, err = SolveA(lines)
 
-	if err != nil {
-		fmt.Println("Error in A:", err)
-		return
+		if err != nil {
+			fmt.Println("Error in A:", err)
+			return
+		}
+
+		fmt.Println("Result A:", result)
 	}
 
-	fmt.Println("Result A:", result)
+	{
+		result, err = SolveB(lines)
+		if err != nil {
+			fmt.Println("Error in B:", err)
+			return
+		}
+
+		fmt.Println("Result B:", result)
+	}
 }

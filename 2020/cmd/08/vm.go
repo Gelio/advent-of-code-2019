@@ -27,7 +27,9 @@ func (i *accInstr) Exec(c *Context) {
 	c.nextInstr()
 }
 
-type nopInstr struct{}
+type nopInstr struct {
+	v int
+}
 
 func (i *nopInstr) Exec(c *Context) {
 	c.nextInstr()
@@ -61,7 +63,7 @@ func parseInstruction(s string) (instr Instruction, err error) {
 
 	switch matches[1] {
 	case "nop":
-		instr = &nopInstr{}
+		instr = &nopInstr{v: num}
 		return
 
 	case "acc":
@@ -109,6 +111,24 @@ func (p *Program) Step() error {
 	}
 
 	instr.Exec(p.ctx)
+
+	return nil
+}
+
+func (p *Program) hasFinished() bool {
+	return p.ctx.ip == len(p.instructions)
+}
+
+func (p *Program) Run() error {
+	visitedInstructions := make(map[int]bool)
+
+	for !visitedInstructions[p.ctx.ip] && !p.hasFinished() {
+		visitedInstructions[p.ctx.ip] = true
+
+		if err := p.Step(); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

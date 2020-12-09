@@ -8,8 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSolveA(t *testing.T) {
-	input := strings.Split(`nop +0
+var input = strings.Split(`nop +0
 acc +1
 jmp +4
 acc +3
@@ -19,8 +18,16 @@ acc +1
 jmp -4
 acc +6`, "\n")
 
+func TestSolveA(t *testing.T) {
 	res, err := SolveA(input)
 	require.NoError(t, err)
 
 	assert.Equal(t, 5, res)
+}
+
+func TestSolveB(t *testing.T) {
+	res, err := SolveB(input)
+	require.NoError(t, err)
+
+	assert.Equal(t, 8, res)
 }
