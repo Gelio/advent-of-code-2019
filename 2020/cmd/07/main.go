@@ -22,11 +22,31 @@ func main() {
 		return
 	}
 
-	resultA, err := SolveA(lines)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	c := make(chan bool)
 
-	fmt.Println("Result A:", resultA)
+	go func() {
+		resultA, err := SolveA(lines)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println("Result A:", resultA)
+		c <- true
+	}()
+
+	go func() {
+		resultB, err := SolveB(lines)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println("Result B:", resultB)
+		c <- true
+	}()
+
+	<-c
+	<-c
 }
