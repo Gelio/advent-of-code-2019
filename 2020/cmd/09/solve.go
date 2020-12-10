@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"strconv"
 )
 
 func solveA(ns []int, preambleLen int) (int, error) {
@@ -85,19 +84,4 @@ func getMax(ns []int) int {
 	}
 
 	return m
-}
-
-func parseNums(lines []string) ([]int, error) {
-	nums := make([]int, 0, len(lines))
-
-	for _, l := range lines {
-		num, err := strconv.Atoi(l)
-		if err != nil {
-			return nil, err
-		}
-
-		nums = append(nums, num)
-	}
-
-	return nums, nil
 }

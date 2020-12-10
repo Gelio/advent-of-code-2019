@@ -1,6 +1,7 @@
 package main
 
 import (
+	"aoc-2020/internal/parse"
 	"aoc-2020/internal/stdin"
 	"fmt"
 )
@@ -12,7 +13,7 @@ func main() {
 		return
 	}
 
-	nums, err := parseNums(lines)
+	nums, err := parse.Ints(lines)
 	if err != nil {
 		fmt.Println("Error when parsing lines:", err)
 		return

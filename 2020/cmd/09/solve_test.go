@@ -1,6 +1,7 @@
 package main
 
 import (
+	"aoc-2020/internal/parse"
 	"strings"
 	"testing"
 
@@ -30,7 +31,7 @@ var input = strings.Split(`35
 576`, "\n")
 
 func TestSolveA(t *testing.T) {
-	nums, err := parseNums(input)
+	nums, err := parse.Ints(input)
 	require.NoError(t, err)
 
 	result, err := solveA(nums, 5)
@@ -40,7 +41,7 @@ func TestSolveA(t *testing.T) {
 }
 
 func TestSolveB(t *testing.T) {
-	nums, err := parseNums(input)
+	nums, err := parse.Ints(input)
 	require.NoError(t, err)
 
 	min, max, err := solveB(nums, 127)
