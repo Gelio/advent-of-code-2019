@@ -8,8 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSolveA(t *testing.T) {
-	input := strings.Split(`35
+var input = strings.Split(`35
 20
 15
 25
@@ -29,6 +28,8 @@ func TestSolveA(t *testing.T) {
 277
 309
 576`, "\n")
+
+func TestSolveA(t *testing.T) {
 	nums, err := parseNums(input)
 	require.NoError(t, err)
 
@@ -36,4 +37,15 @@ func TestSolveA(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, 127, result)
+}
+
+func TestSolveB(t *testing.T) {
+	nums, err := parseNums(input)
+	require.NoError(t, err)
+
+	min, max, err := solveB(nums, 127)
+
+	require.NoError(t, err)
+	assert.Equal(t, 15, min)
+	assert.Equal(t, 47, max)
 }

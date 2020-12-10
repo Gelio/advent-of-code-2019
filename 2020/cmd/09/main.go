@@ -21,8 +21,15 @@ func main() {
 	const preambleLen = 25
 	resA, err := solveA(nums, preambleLen)
 	if err != nil {
-		fmt.Println("Cannot compute A", err)
+		fmt.Println("Cannot compute A:", err)
 	} else {
 		fmt.Println("Result A:", resA)
+	}
+
+	bMin, bMax, err := solveB(nums, resA)
+	if err != nil {
+		fmt.Println("Cannot compute B:", err)
+	} else {
+		fmt.Println("Result B:", bMin+bMax)
 	}
 }
