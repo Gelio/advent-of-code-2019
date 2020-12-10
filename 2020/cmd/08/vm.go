@@ -22,6 +22,7 @@ type accInstr struct {
 	v int
 }
 
+// QUESTION: is `*accInstr` ok, or I would be better of with `accInstr`? What's the difference?
 func (i *accInstr) Exec(c *Context) {
 	c.acc += i.v
 	c.nextInstr()
@@ -63,6 +64,9 @@ func parseInstruction(s string) (instr Instruction, err error) {
 
 	switch matches[1] {
 	case "nop":
+		// QUESTION: this one is weird to me. It does not compile if I expect `*Instruction` in params.
+		// Why?
+		// NOTE: cannot use &(nopInstr literal) (value of type *nopInstr) as *Instruction value in assignment
 		instr = &nopInstr{v: num}
 		return
 
@@ -81,10 +85,12 @@ func parseInstruction(s string) (instr Instruction, err error) {
 }
 
 type Program struct {
+	// QUESTION: is `[]Instruction` ok, or should I do `[]*Instruction`?
 	instructions []Instruction
 	ctx          *Context
 }
 
+// QUESTIONS: are such factory methods common?
 func NewProgram(instrs []Instruction) *Program {
 	return &Program{
 		instructions: instrs,

@@ -13,6 +13,7 @@ const (
 	upper = iota
 )
 
+// QUESTION: should I use `rune` or `byte` here (I am iterating over a string from stdin)?
 var characters = map[rune]int{
 	'F': lower,
 	'B': upper,

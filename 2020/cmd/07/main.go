@@ -22,8 +22,10 @@ func main() {
 		return
 	}
 
+	// QUESTION: is this a good way to synchronize wait for subroutines to finish? Should I use `sync.WaitGroup`?
 	c := make(chan bool)
 
+	// QUESTION: does it make sense to run those 2 parts concurrently?
 	go func() {
 		resultA, err := SolveA(lines)
 		if err != nil {

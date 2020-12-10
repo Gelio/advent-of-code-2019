@@ -74,6 +74,8 @@ func SolveB(lines []string) (bagsRequired int, err error) {
 	return
 }
 
+// NOTE: bagGraph is a map
+// QUESTION: Would it be better to do `*bagGraph` here, or `bagGraph` is ok?
 func (g bagGraph) countNestedBagWithMainBag(bagColor string) (result int, err error) {
 	nestedBags, ok := g[bagColor]
 

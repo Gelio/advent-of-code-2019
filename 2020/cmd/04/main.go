@@ -58,6 +58,9 @@ func parsePassportFields(passportLines []string) (passportFields map[string]stri
 }
 
 var requiredFields = []string{"byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"}
+
+// QUESTION: is the type ok? Should I extract `func(string) bool` into a separate type / name the
+// argument/return value?
 var validationRules = map[string]func(string) bool{
 	"byr": func(value string) bool {
 		num, err := strconv.Atoi(value)
@@ -107,6 +110,7 @@ var validationRules = map[string]func(string) bool{
 		r, err := regexp.Compile("^#[0-9a-f]{6}$")
 		if err != nil {
 			fmt.Println("Error when compiling regexp")
+			// QUESTION: is panic ok here, or should I return `(bool, err)`?
 			panic(err)
 		}
 

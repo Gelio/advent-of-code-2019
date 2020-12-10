@@ -12,9 +12,9 @@ func main() {
 		return
 	}
 
-	var result int
+	// QUESTION: are such blocks ok for unrelated parts of functions?
 	{
-		result, err = SolveA(lines)
+		result, err := SolveA(lines)
 
 		if err != nil {
 			fmt.Println("Error in A:", err)
@@ -25,7 +25,7 @@ func main() {
 	}
 
 	{
-		result, err = SolveB(lines)
+		result, err := SolveB(lines)
 		if err != nil {
 			fmt.Println("Error in B:", err)
 			return

@@ -36,6 +36,7 @@ func TestParseLine(t *testing.T) {
 		}},
 	}
 
+	// NOTE: I should have probably used `t.Run` and `assert` package here
 	for caseIndex, c := range cases {
 		result, err := parseLine(c.line)
 		if err != nil {

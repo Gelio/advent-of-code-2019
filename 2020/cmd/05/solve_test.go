@@ -13,6 +13,8 @@ func TestGetPassengerSeat(t *testing.T) {
 		{input: "BBFFBBFRLL", row: 102, column: 4},
 	}
 
+	// QUESTION: would you change anything in this tests? e.g. use `assert` or `t.Run`?
+
 	for i, c := range cases {
 		res, err := getPassengerSeat(c.input)
 		if err != nil {

@@ -45,6 +45,9 @@ func SolveB(lines []string) (res int, err error) {
 			continue
 
 		case *jmpInstr:
+			// NOTE: I want each goroutine to work on a `initialInstrs` array, but with 1 element changed.
+			// QUESTION: how should I do it?
+			// NOTE: see `runWithChangedInstructions` for my idea on how I have done it
 			go runWithChangedInstructions(initialInstrs, idx, &nopInstr{v: i.v}, resChan)
 
 		case *nopInstr:

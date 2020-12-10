@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+// QUESTION: would you rename anything here? e.g. shorten some variable names?
+
 func parseLine(line string) (r rule, err error) {
 	bagRegexpExpression := "(\\w+) (\\w+) bags?"
 
