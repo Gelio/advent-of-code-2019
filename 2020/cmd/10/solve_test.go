@@ -10,13 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSolveA(t *testing.T) {
-	cases := []struct {
-		input       string
-		expectedRes int
-	}{
-		{
-			input: `16
+var input1 = `16
 10
 15
 5
@@ -26,11 +20,9 @@ func TestSolveA(t *testing.T) {
 19
 6
 12
-4`,
-			expectedRes: 7 * 5,
-		},
-		{
-			input: `28
+4`
+
+var input2 = `28
 33
 18
 42
@@ -60,7 +52,19 @@ func TestSolveA(t *testing.T) {
 2
 34
 10
-3`,
+3`
+
+func TestSolveA(t *testing.T) {
+	cases := []struct {
+		input       string
+		expectedRes int
+	}{
+		{
+			input:       input1,
+			expectedRes: 7 * 5,
+		},
+		{
+			input:       input2,
 			expectedRes: 22 * 10,
 		},
 	}
@@ -72,6 +76,37 @@ func TestSolveA(t *testing.T) {
 			require.NoError(t, err)
 
 			res := solveA(nums)
+
+			assert.Equal(t, tt.expectedRes, res)
+		})
+	}
+}
+
+func TestSolveB(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		input       string
+		expectedRes int
+	}{
+		{
+			input:       input1,
+			expectedRes: 8,
+		},
+		{
+			input:       input2,
+			expectedRes: 19208,
+		},
+	}
+
+	for i, tt := range cases {
+		tt := tt
+		t.Run(fmt.Sprintf("%d", i+1), func(t *testing.T) {
+			t.Parallel()
+			nums, err := parse.Ints(strings.Split(tt.input, "\n"))
+
+			require.NoError(t, err)
+
+			res := solveB(nums)
 
 			assert.Equal(t, tt.expectedRes, res)
 		})
