@@ -14,4 +14,7 @@ func main() {
 
 	res := solveA(input)
 	fmt.Println("Result A:", res)
+
+	res = solveB(input)
+	fmt.Println("Result B:", res)
 }

@@ -3,7 +3,15 @@ package main
 func solveA(lines []string) int {
 	m := parseSeatMap(lines)
 
-	m.simulate()
+	m.simulate(1, 4)
+
+	return m.countOccupiedSeats()
+}
+
+func solveB(lines []string) int {
+	m := parseSeatMap(lines)
+
+	m.simulate(1e5, 5)
 
 	return m.countOccupiedSeats()
 }
@@ -26,46 +34,62 @@ func parseSeatMap(lines []string) seatMap {
 	return m
 }
 
-func (m seatMap) simulate() (simulationRuns int) {
+func (m seatMap) get(x, y int) rune {
+	return m[y][x]
+}
+
+func (m seatMap) set(x, y int, v rune) {
+	m[y][x] = v
+}
+
+func (m seatMap) forEach(f func(x, y int, v rune)) {
+	for y, row := range m {
+		for x, v := range row {
+			f(x, y, v)
+		}
+	}
+}
+
+func (m seatMap) isWithin(p position) bool {
+	return p.x >= 0 && p.y >= 0 && p.y < len(m) && p.x < len(m[0])
+}
+
+func (m seatMap) simulate(maxDist, minOccupiedNeighborsToLeave int) (simulationRuns int) {
 	dirty := true
 
-	neighborsCount := make([][]int, len(m))
-	for i := range m {
-		neighborsCount[i] = make([]int, len(m[i]))
-	}
+	ns := getNeighboringSeats(m, maxDist)
+	occupiedNeighborsCount := make(map[position]int)
 
 	for dirty {
 		dirty = false
 		simulationRuns++
 
-		for y, row := range m {
-			for x, v := range row {
-				if v == occupiedSeat {
-					markSeatOccupied(neighborsCount, x, y)
+		for pos, neighbors := range ns {
+			if m.get(pos.x, pos.y) == occupiedSeat {
+				for _, n := range neighbors {
+					occupiedNeighborsCount[n]++
 				}
 			}
 		}
 
-		for y, row := range m {
-			for x, v := range row {
-				nc := neighborsCount[y][x]
-				neighborsCount[y][x] = 0
+		for pos := range ns {
+			nc := occupiedNeighborsCount[pos]
+			occupiedNeighborsCount[pos] = 0
 
-				switch v {
-				case floor:
-					continue
+			switch m.get(pos.x, pos.y) {
+			case floor:
+				continue
 
-				case emptySeat:
-					if nc == 0 {
-						dirty = true
-						row[x] = occupiedSeat
-					}
+			case emptySeat:
+				if nc == 0 {
+					dirty = true
+					m.set(pos.x, pos.y, occupiedSeat)
+				}
 
-				case occupiedSeat:
-					if nc >= 4 {
-						dirty = true
-						row[x] = emptySeat
-					}
+			case occupiedSeat:
+				if nc >= minOccupiedNeighborsToLeave {
+					dirty = true
+					m.set(pos.x, pos.y, emptySeat)
 				}
 			}
 		}
@@ -74,44 +98,76 @@ func (m seatMap) simulate() (simulationRuns int) {
 	return
 }
 
-func markSeatOccupied(neighborsCount [][]int, x, y int) {
-	for i := max(0, y-1); i <= min(len(neighborsCount)-1, y+1); i++ {
-		for j := max(0, x-1); j <= min(len(neighborsCount[i])-1, x+1); j++ {
-			if i == y && j == x {
-				continue
-			}
-
-			neighborsCount[i][j]++
-		}
-	}
-}
-
-func min(x, y int) int {
-	if x < y {
-		return x
-	}
-
-	return y
-}
-
-func max(x, y int) int {
-	if x > y {
-		return x
-	}
-
-	return y
-}
-
 func (m seatMap) countOccupiedSeats() int {
 	occupiedSeats := 0
 
-	for _, row := range m {
-		for _, v := range row {
-			if v == occupiedSeat {
-				occupiedSeats++
+	m.forEach(func(_, _ int, v rune) {
+		if v == occupiedSeat {
+			occupiedSeats++
+		}
+	})
+
+	return occupiedSeats
+}
+
+type position struct {
+	x, y int
+}
+
+type neighboringSeats map[position][]position
+
+type direction struct {
+	xDelta, yDelta int
+}
+
+func getNeighboringSeats(m seatMap, maxDistance int) neighboringSeats {
+	directions := []direction{
+		{-1, -1},
+		{-1, 0},
+		{-1, 1},
+		{0, -1},
+		{0, 1},
+		{1, -1},
+		{1, 0},
+		{1, 1},
+	}
+
+	ns := make(neighboringSeats)
+
+	m.forEach(func(x, y int, v rune) {
+		if v != emptySeat {
+			return
+		}
+
+		pos := position{x, y}
+
+		ns[pos] = nil
+
+		for _, d := range directions {
+			if p, found := getSeatInDirection(m, pos, d, maxDistance); found {
+				ns[pos] = append(ns[pos], p)
 			}
+		}
+	})
+
+	return ns
+}
+
+func getSeatInDirection(m seatMap, pos position, dir direction, maxDist int) (position, bool) {
+	for i := 0; i < maxDist; i++ {
+		pos.x += dir.xDelta
+		pos.y += dir.yDelta
+
+		if !m.isWithin(pos) {
+			break
+		}
+
+		v := m.get(pos.x, pos.y)
+
+		if v != floor {
+			return position{pos.x, pos.y}, true
 		}
 	}
 
-	return occupiedSeats
+	return position{}, false
 }
