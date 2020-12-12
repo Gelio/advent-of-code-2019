@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	lines, err := stdin.ReadAllLines()
+	lines, err := stdin.ReadLinesFromFile("input.txt")
 	if err != nil {
 		fmt.Println("Error when reading input:", err)
 		return
@@ -19,4 +19,12 @@ func main() {
 	}
 
 	fmt.Println("Result A:", res)
+
+	res, err = solveB(lines)
+	if err != nil {
+		fmt.Println("Error when solving B:", err)
+		return
+	}
+
+	fmt.Println("Result B:", res)
 }
