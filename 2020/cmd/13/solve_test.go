@@ -33,32 +33,26 @@ func TestSolveB(t *testing.T) {
 	}{
 		{
 			busIDs:         "7,13,x,x,59,x,31,19",
-			startTimestamp: 0,
 			expectedResult: 1068781,
 		},
 		{
 			busIDs:         "17,x,13,19",
-			startTimestamp: 0,
 			expectedResult: 3417,
 		},
 		{
 			busIDs:         "67,7,59,61",
-			startTimestamp: 0,
 			expectedResult: 754018,
 		},
 		{
 			busIDs:         "67,x,7,59,61",
-			startTimestamp: 0,
 			expectedResult: 779210,
 		},
 		{
 			busIDs:         "67,7,x,59,61",
-			startTimestamp: 0,
 			expectedResult: 1261476,
 		},
 		{
 			busIDs:         "1789,37,47,1889",
-			startTimestamp: 0,
 			expectedResult: 1202161486,
 		},
 	}
@@ -69,7 +63,7 @@ func TestSolveB(t *testing.T) {
 
 			require.NoError(t, err, "Invalid bus IDs in the test case")
 
-			result := solveB(tt.startTimestamp, busIDs)
+			result := solveB(busIDs)
 			assert.Equal(t, tt.expectedResult, result)
 		})
 	}

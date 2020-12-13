@@ -52,31 +52,29 @@ func solveA(timestamp int, busIDs []int) int {
 	return solution.busID * solution.timeToWait
 }
 
-func solveB(startTimestamp int, busIDs []int) int {
-	firstBusDepartureTimestamp := (startTimestamp/busIDs[0] + 1) * busIDs[0]
-
-	var actualBusIndexes []int
+func solveB(busIDs []int) int {
+	// Solved based on the example in Polish Chinese reminder theorem Wikipedia article
+	// https://pl.wikipedia.org/wiki/Chi%C5%84skie_twierdzenie_o_resztach#Przyk%C5%82ad
+	var a, b int
 
 	for i, busID := range busIDs {
-		if busID != cross {
-			actualBusIndexes = append(actualBusIndexes, i)
+		if busID == cross {
+			continue
 		}
-	}
 
-	for t := firstBusDepartureTimestamp; true; t += busIDs[0] {
-		allMatch := true
+		if i == 0 {
+			b = busID
+			continue
+		}
 
-		for _, busIndex := range actualBusIndexes {
-			if busDeparts := (t+busIndex)%busIDs[busIndex] == 0; !busDeparts {
-				allMatch = false
+		for x := a; true; x += b {
+			if (x+i)%busID == 0 {
+				a = x
+				b *= busID
 				break
 			}
 		}
-
-		if allMatch {
-			return t
-		}
 	}
 
-	return -1
+	return a
 }

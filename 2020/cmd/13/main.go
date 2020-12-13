@@ -28,6 +28,6 @@ func main() {
 	result := solveA(timestamp, busIDs)
 	fmt.Println("Result A:", result)
 
-	result = solveB(100000000000000, busIDs)
+	result = solveB(busIDs)
 	fmt.Println("Result B:", result)
 }
