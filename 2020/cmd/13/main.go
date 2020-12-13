@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	lines, err := stdin.ReadAllLines()
+	lines, err := stdin.ReadLinesFromFile("input.txt")
 	if err != nil {
 		fmt.Println("Error when reading input:", err)
 		return
@@ -27,4 +27,7 @@ func main() {
 
 	result := solveA(timestamp, busIDs)
 	fmt.Println("Result A:", result)
+
+	result = solveB(100000000000000, busIDs)
+	fmt.Println("Result B:", result)
 }
