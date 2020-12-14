@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMask(t *testing.T) {
+func TestMaskA(t *testing.T) {
 	cases := []struct {
 		mask                  string
 		input, expectedResult int
@@ -19,7 +19,7 @@ func TestMask(t *testing.T) {
 
 	for i, tt := range cases {
 		t.Run(fmt.Sprintf("case %d", i+1), func(t *testing.T) {
-			m := newMask(tt.mask)
+			m := newMaskA(tt.mask)
 
 			res := m.Apply(tt.input)
 

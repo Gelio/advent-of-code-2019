@@ -12,7 +12,7 @@ type setMemory struct {
 }
 
 type setMask struct {
-	m mask
+	mask string
 }
 
 func parseOpLine(line string) (interface{}, error) {
@@ -26,7 +26,7 @@ func parseOpLine(line string) (interface{}, error) {
 
 	if len(matches) > 0 {
 		rawMask := matches[1]
-		return setMask{newMask(rawMask)}, nil
+		return setMask{rawMask}, nil
 	}
 
 	setMemoryRegexp, err := regexp.Compile(`^mem\[(\d+)\] = (\d+)$`)

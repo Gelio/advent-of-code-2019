@@ -1,11 +1,12 @@
 package main
 
-type mask struct {
+// maskA applies the bitmasking rules from part A
+type maskA struct {
 	orMask, andMask uint
 }
 
-func newMask(line string) mask {
-	m := mask{}
+func newMaskA(line string) maskA {
+	m := maskA{}
 
 	maskLen := len(line)
 
@@ -29,6 +30,6 @@ func newMask(line string) mask {
 	return m
 }
 
-func (m mask) Apply(value int) int {
+func (m maskA) Apply(value int) int {
 	return int(uint(value)&m.andMask | m.orMask)
 }

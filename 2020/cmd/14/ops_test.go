@@ -15,7 +15,7 @@ func TestParseOpLine(t *testing.T) {
 	}{
 		{
 			line:           "mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X",
-			expectedResult: setMask{newMask("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X")},
+			expectedResult: setMask{"XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X"},
 		},
 		{
 			line:           "mem[8] = 11",

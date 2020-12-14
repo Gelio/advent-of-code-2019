@@ -4,7 +4,7 @@ import "fmt"
 
 func solveA(lines []string) (int, error) {
 	memory := make(map[int]int)
-	var m mask
+	var m maskA
 
 	for i, line := range lines {
 		op, err := parseOpLine(line)
@@ -15,7 +15,7 @@ func solveA(lines []string) (int, error) {
 
 		switch v := op.(type) {
 		case setMask:
-			m = v.m
+			m = newMaskA(v.mask)
 
 		case setMemory:
 			memory[v.memIndex] = m.Apply(v.value)
