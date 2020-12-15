@@ -1,7 +1,6 @@
 package main
 
-func solveA(input []int) int {
-	resultIndex := 2020
+func solve(input []int, resultIndex int) int {
 	lastFoundIndex := make(map[int]int)
 
 	for i, x := range input[:len(input)-1] {

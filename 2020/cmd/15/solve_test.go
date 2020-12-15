@@ -8,6 +8,9 @@ import (
 )
 
 func TestSolveA(t *testing.T) {
+	// Only cases from A are tested, since part B is just related to performance optimizations,
+	// not correctness.
+	resultIndex := 2020
 	cases := []struct {
 		input          []int
 		expectedResult int
@@ -44,7 +47,7 @@ func TestSolveA(t *testing.T) {
 
 	for i, tt := range cases {
 		t.Run(fmt.Sprintf("case %d", i+1), func(t *testing.T) {
-			res := solveA(tt.input)
+			res := solve(tt.input, resultIndex)
 
 			assert.Equal(t, tt.expectedResult, res)
 		})
