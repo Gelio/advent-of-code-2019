@@ -33,9 +33,7 @@ zone: 35-411 or 427-960`, "\n"))
 		return
 	}
 
-	// myTicket := []int{139, 109, 61, 149, 101, 89, 103, 53, 107, 59, 73, 151, 71, 67, 97, 113, 83, 163, 137, 167}
-
-	rawNearbyTickets, err := stdin.ReadAllLines()
+	rawNearbyTickets, err := stdin.ReadLinesFromFile("nearby-tickets.txt")
 	if err != nil {
 		fmt.Println("Error when reading input", err)
 		return
@@ -48,4 +46,8 @@ zone: 35-411 or 427-960`, "\n"))
 
 	res := solveA(specs, nearbyTickets)
 	fmt.Println("Result A:", res)
+
+	myTicket := []int{139, 109, 61, 149, 101, 89, 103, 53, 107, 59, 73, 151, 71, 67, 97, 113, 83, 163, 137, 167}
+	res = solveB(specs, myTicket, nearbyTickets)
+	fmt.Println("Result B:", res)
 }

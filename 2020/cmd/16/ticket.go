@@ -67,7 +67,7 @@ func parseTickets(lines []string) ([][]int, error) {
 
 func newTicketFieldSpec(line string) (ticketFieldSpec, error) {
 	spec := ticketFieldSpec{}
-	r, err := regexp.Compile(`(\w+): (\d+)-(\d+) or (\d+)-(\d+)`)
+	r, err := regexp.Compile(`([\w\s]+): (\d+)-(\d+) or (\d+)-(\d+)`)
 	if err != nil {
 		return spec, err
 	}

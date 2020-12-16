@@ -24,7 +24,7 @@ func TestSolveA(t *testing.T) {
 	assert.Equal(t, 71, res)
 }
 
-func TestSolveB(t *testing.T) {
+func TestMatchSpecFromIndex(t *testing.T) {
 	specs, err := parseSpecs(strings.Split(`class: 0-1 or 4-19
   row: 0-5 or 8-19
   seat: 0-13 or 16-19`, "\n"))
@@ -35,8 +35,15 @@ func TestSolveB(t *testing.T) {
 5,14,9`, "\n"))
 	require.NoError(t, err)
 
-	myTicket := []int{11, 12, 13}
+	specToFieldMapping := make(map[int]int)
+	assert.True(t, matchSpecFromIndex(specs, specToFieldMapping, nearbyTickets, 0), "solution not found")
 
-	res := solveB(specs, myTicket, nearbyTickets)
-	assert.Equal(t, 0, res)
+	assert.Equal(t, map[int]int{
+		// class is the 2nd field
+		0: 1,
+		// row is the 1st field
+		1: 0,
+		// seat is the 3rd field
+		2: 2,
+	}, specToFieldMapping)
 }

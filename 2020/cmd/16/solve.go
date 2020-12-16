@@ -1,5 +1,9 @@
 package main
 
+import (
+	"strings"
+)
+
 func solveA(specs []ticketFieldSpec, nearbyTickets [][]int) int {
 	scanningErrorRate := 0
 
@@ -29,7 +33,14 @@ func solveB(specs []ticketFieldSpec, myTicket []int, nearbyTickets [][]int) int 
 	specToFieldMapping := make(map[int]int)
 	matchSpecFromIndex(specs, specToFieldMapping, validNearbyTickets, 0)
 
-	return 0
+	result := 1
+	for i, spec := range specs {
+		if strings.HasPrefix(spec.name, "departure") {
+			result *= myTicket[specToFieldMapping[i]]
+		}
+	}
+
+	return result
 }
 
 func matchSpecFromIndex(specs []ticketFieldSpec, specToFieldMapping map[int]int, tickets [][]int, fieldIndex int) bool {
@@ -69,16 +80,25 @@ func getValidTickets(specs []ticketFieldSpec, nearbyTickets [][]int) [][]int {
 	var validTickets [][]int
 
 	for _, ticket := range nearbyTickets {
-	currentTicketLoop:
+		ticketValid := true
+
 		for _, fieldValue := range ticket {
+			someSpecMatches := false
+
 			for _, spec := range specs {
-				for _, fieldRange := range spec.ranges {
-					if !fieldRange.Has(fieldValue) {
-						break currentTicketLoop
-					}
+				if spec.Matches(fieldValue) {
+					someSpecMatches = true
+					break
 				}
 			}
 
+			if !someSpecMatches {
+				ticketValid = false
+				break
+			}
+		}
+
+		if ticketValid {
 			validTickets = append(validTickets, ticket)
 		}
 	}
