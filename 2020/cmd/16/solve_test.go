@@ -23,3 +23,20 @@ func TestSolveA(t *testing.T) {
 	res := solveA(specs, nearbyTickets)
 	assert.Equal(t, 71, res)
 }
+
+func TestSolveB(t *testing.T) {
+	specs, err := parseSpecs(strings.Split(`class: 0-1 or 4-19
+  row: 0-5 or 8-19
+  seat: 0-13 or 16-19`, "\n"))
+	require.NoError(t, err)
+
+	nearbyTickets, err := parseTickets(strings.Split(`3,9,18
+15,1,5
+5,14,9`, "\n"))
+	require.NoError(t, err)
+
+	myTicket := []int{11, 12, 13}
+
+	res := solveB(specs, myTicket, nearbyTickets)
+	assert.Equal(t, 0, res)
+}
