@@ -6,15 +6,12 @@ func solveA(specs []ticketFieldSpec, nearbyTickets [][]int) int {
 	for _, ticket := range nearbyTickets {
 		for _, fieldValue := range ticket {
 			valid := false
-		currentValueLoop:
 			for _, spec := range specs {
-				for _, fieldRange := range spec.ranges {
-					if fieldRange.Has(fieldValue) {
+				if spec.Matches(fieldValue) {
 						valid = true
-						break currentValueLoop
+					break
 					}
 				}
-			}
 
 			if !valid {
 				scanningErrorRate += fieldValue

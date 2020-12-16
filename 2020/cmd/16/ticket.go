@@ -20,6 +20,16 @@ type ticketFieldSpec struct {
 	ranges []fieldRange
 }
 
+func (s ticketFieldSpec) Matches(x int) bool {
+	for _, r := range s.ranges {
+		if r.Has(x) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func parseSpecs(lines []string) ([]ticketFieldSpec, error) {
 	var specs []ticketFieldSpec
 
