@@ -36,7 +36,7 @@ func TestMatchSpecFromIndex(t *testing.T) {
 	require.NoError(t, err)
 
 	specToFieldMapping := make(map[int]int)
-	assert.True(t, matchSpecFromIndex(specs, specToFieldMapping, nearbyTickets, 0), "solution not found")
+	matchSpecFromIndex(specs, specToFieldMapping, nearbyTickets)
 
 	assert.Equal(t, map[int]int{
 		// class is the 2nd field

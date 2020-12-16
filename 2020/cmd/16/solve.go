@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -31,7 +32,7 @@ func solveB(specs []ticketFieldSpec, myTicket []int, nearbyTickets [][]int) int 
 
 	// specToFieldMapping[specIndex] = fieldIndex
 	specToFieldMapping := make(map[int]int)
-	matchSpecFromIndex(specs, specToFieldMapping, validNearbyTickets, 0)
+	matchSpecFromIndex(specs, specToFieldMapping, validNearbyTickets)
 
 	result := 1
 	for i, spec := range specs {
@@ -43,10 +44,31 @@ func solveB(specs []ticketFieldSpec, myTicket []int, nearbyTickets [][]int) int 
 	return result
 }
 
-func matchSpecFromIndex(specs []ticketFieldSpec, specToFieldMapping map[int]int, tickets [][]int, fieldIndex int) bool {
-	if fieldIndex == len(specs) {
-		return true
+func matchSpecFromIndex(specs []ticketFieldSpec, specToFieldMapping map[int]int, tickets [][]int) {
+	var fieldMatched []bool
+	for range specs {
+		fieldMatched = append(fieldMatched, false)
 	}
+
+	for fieldIndex, specFieldsMatched := 0, 0; specFieldsMatched < len(fieldMatched); fieldIndex = (fieldIndex + 1) % len(fieldMatched) {
+		if fieldMatched[fieldIndex] {
+			continue
+		}
+
+		specIndex, err := getOnlyMatchingSpecIndexForFieldIndex(specs, specToFieldMapping, tickets, fieldIndex)
+		if err != nil {
+			continue
+		}
+
+		specFieldsMatched++
+		specToFieldMapping[specIndex] = fieldIndex
+		fieldMatched[fieldIndex] = true
+	}
+}
+
+func getOnlyMatchingSpecIndexForFieldIndex(specs []ticketFieldSpec, specToFieldMapping map[int]int, tickets [][]int, fieldIndex int) (int, error) {
+	var foundSpecIndex int
+	specFound := false
 
 	for specIndex, spec := range specs {
 		if _, ok := specToFieldMapping[specIndex]; ok {
@@ -54,16 +76,16 @@ func matchSpecFromIndex(specs []ticketFieldSpec, specToFieldMapping map[int]int,
 		}
 
 		if isSpecValidForTicketsAtIndex(spec, tickets, fieldIndex) {
-			// Try with this spec
-			specToFieldMapping[specIndex] = fieldIndex
-			if matchSpecFromIndex(specs, specToFieldMapping, tickets, fieldIndex+1) {
-				return true
+			if specFound {
+				return 0, fmt.Errorf("found 2 or more matching specs for field at index %d", fieldIndex)
 			}
-			delete(specToFieldMapping, specIndex)
+
+			foundSpecIndex = specIndex
+			specFound = true
 		}
 	}
 
-	return false
+	return foundSpecIndex, nil
 }
 
 func isSpecValidForTicketsAtIndex(spec ticketFieldSpec, tickets [][]int, index int) bool {
