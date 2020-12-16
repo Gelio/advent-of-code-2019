@@ -1,10 +1,5 @@
 package main
 
-import (
-	"strconv"
-	"strings"
-)
-
 func solveA(specs []ticketFieldSpec, nearbyTickets [][]int) int {
 	scanningErrorRate := 0
 
@@ -28,39 +23,4 @@ func solveA(specs []ticketFieldSpec, nearbyTickets [][]int) int {
 	}
 
 	return scanningErrorRate
-}
-
-func parseSpecs(lines []string) ([]ticketFieldSpec, error) {
-	var specs []ticketFieldSpec
-
-	for _, line := range lines {
-		spec, err := NewTicketFieldSpec(line)
-		if err != nil {
-			return nil, err
-		}
-
-		specs = append(specs, spec)
-	}
-
-	return specs, nil
-}
-
-func parseTickets(lines []string) ([][]int, error) {
-	var tickets [][]int
-
-	for _, line := range lines {
-		var ticketNums []int
-		for _, num := range strings.Split(line, ",") {
-			parsedNum, err := strconv.Atoi(num)
-			if err != nil {
-				return nil, err
-			}
-
-			ticketNums = append(ticketNums, parsedNum)
-		}
-
-		tickets = append(tickets, ticketNums)
-	}
-
-	return tickets, nil
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 type fieldRange struct {
@@ -19,7 +20,42 @@ type ticketFieldSpec struct {
 	ranges []fieldRange
 }
 
-func NewTicketFieldSpec(line string) (ticketFieldSpec, error) {
+func parseSpecs(lines []string) ([]ticketFieldSpec, error) {
+	var specs []ticketFieldSpec
+
+	for _, line := range lines {
+		spec, err := newTicketFieldSpec(line)
+		if err != nil {
+			return nil, err
+		}
+
+		specs = append(specs, spec)
+	}
+
+	return specs, nil
+}
+
+func parseTickets(lines []string) ([][]int, error) {
+	var tickets [][]int
+
+	for _, line := range lines {
+		var ticketNums []int
+		for _, num := range strings.Split(line, ",") {
+			parsedNum, err := strconv.Atoi(num)
+			if err != nil {
+				return nil, err
+			}
+
+			ticketNums = append(ticketNums, parsedNum)
+		}
+
+		tickets = append(tickets, ticketNums)
+	}
+
+	return tickets, nil
+}
+
+func newTicketFieldSpec(line string) (ticketFieldSpec, error) {
 	spec := ticketFieldSpec{}
 	r, err := regexp.Compile(`(\w+): (\d+)-(\d+) or (\d+)-(\d+)`)
 	if err != nil {
