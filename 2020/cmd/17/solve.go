@@ -8,10 +8,10 @@ const (
 )
 
 type position struct {
-	X, Y, Z int
+	X, Y, Z, W int
 }
 
-func solveA(lines []string) (int, error) {
+func solve(lines []string, neighborsGenerator func(p position) []position) (int, error) {
 	activeCubePositions, err := getActiveCubePositions(lines)
 	if err != nil {
 		return 0, err
@@ -23,7 +23,7 @@ func solveA(lines []string) (int, error) {
 		neighboringActiveCubeCounts := make(map[position]int)
 
 		for p := range activeCubePositions {
-			for _, n := range getNeighboringPositions(p) {
+			for _, n := range neighborsGenerator(p) {
 				neighboringActiveCubeCounts[n]++
 			}
 		}
@@ -68,7 +68,7 @@ func getActiveCubePositions(lines []string) (map[position]bool, error) {
 	return p, nil
 }
 
-func getNeighboringPositions(p position) []position {
+func getNeighboringPositions3D(p position) []position {
 	var neighbors []position
 
 	for x := p.X - 1; x <= p.X+1; x++ {
@@ -78,7 +78,27 @@ func getNeighboringPositions(p position) []position {
 					continue
 				}
 
-				neighbors = append(neighbors, position{x, y, z})
+				neighbors = append(neighbors, position{x, y, z, 0})
+			}
+		}
+	}
+
+	return neighbors
+}
+
+func getNeighboringPositions4D(p position) []position {
+	var neighbors []position
+
+	for x := p.X - 1; x <= p.X+1; x++ {
+		for y := p.Y - 1; y <= p.Y+1; y++ {
+			for z := p.Z - 1; z <= p.Z+1; z++ {
+				for w := p.W - 1; w <= p.W+1; w++ {
+					if x == p.X && y == p.Y && z == p.Z && w == p.W {
+						continue
+					}
+
+					neighbors = append(neighbors, position{x, y, z, w})
+				}
 			}
 		}
 	}

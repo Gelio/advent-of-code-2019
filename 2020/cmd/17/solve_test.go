@@ -8,12 +8,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSolveA(t *testing.T) {
-	res, err := solveA(strings.Split(`.#.
+var input = strings.Split(`.#.
 ..#
-###`, "\n"))
+###`, "\n")
+
+func TestSolveA(t *testing.T) {
+	res, err := solve(input, getNeighboringPositions3D)
 
 	require.NoError(t, err, "error when parsing input")
 
 	assert.Equal(t, 112, res)
+}
+
+func TestSolveB(t *testing.T) {
+	res, err := solve(input, getNeighboringPositions4D)
+
+	require.NoError(t, err, "error when parsing input")
+
+	assert.Equal(t, 848, res)
 }

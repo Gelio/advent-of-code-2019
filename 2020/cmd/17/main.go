@@ -12,11 +12,19 @@ func main() {
 		return
 	}
 
-	res, err := solveA(lines)
+	res, err := solve(lines, getNeighboringPositions3D)
 	if err != nil {
 		fmt.Println("Error when solving A:", err)
 		return
 	}
 
 	fmt.Println("Result A:", res)
+
+	res, err = solve(lines, getNeighboringPositions4D)
+	if err != nil {
+		fmt.Println("Error when solving B:", err)
+		return
+	}
+
+	fmt.Println("Result B:", res)
 }
