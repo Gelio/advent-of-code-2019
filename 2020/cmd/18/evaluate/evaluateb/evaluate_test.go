@@ -15,6 +15,7 @@ func TestEvaluateTokens(t *testing.T) {
 		input          string
 		expectedResult int
 	}{
+		{input: "(1 * 1 + 1) + 1", expectedResult: 3},
 		{input: "1 + 2 * 3 + 4 * 5 + 6", expectedResult: 231},
 		{input: "1 + (2 * 3) + (4 * (5 + 6))", expectedResult: 51},
 		{input: "2 * 3 + (4 * 5)", expectedResult: 46},

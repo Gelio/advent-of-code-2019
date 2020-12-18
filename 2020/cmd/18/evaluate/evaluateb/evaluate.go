@@ -6,7 +6,7 @@ import (
 )
 
 func Tokens(tokens []interface{}) (int, error) {
-	res, tokensRead, err := evaluateParenthesisedExpression(tokens)
+	res, tokensRead, err := evaluateUntil(tokens, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -18,11 +18,15 @@ func Tokens(tokens []interface{}) (int, error) {
 	return res, nil
 }
 
-func evaluateParenthesisedExpression(tokens []interface{}) (result, tokensRead int, err error) {
+func evaluateUntil(tokens []interface{}, endToken interface{}) (result, tokensRead int, err error) {
 	var acc int
 	var lastToken interface{}
 
 	for i := 0; i < len(tokens); i++ {
+		if tokens[i] == endToken {
+			return acc, i, nil
+		}
+
 		switch t := tokens[i].(type) {
 		case token.Num:
 			if lastToken == token.Plus || lastToken == nil {
@@ -37,7 +41,7 @@ func evaluateParenthesisedExpression(tokens []interface{}) (result, tokensRead i
 		case rune:
 			switch t {
 			case token.LeftParen:
-				subRes, tokensRead, err := evaluateParenthesisedExpression(tokens[i+1:])
+				subRes, tokensRead, err := evaluateUntil(tokens[i+1:], nil)
 				if err != nil {
 					return 0, i, fmt.Errorf("cannot evaluate parenthesised expression from token index %d: %w", i, err)
 				}
@@ -50,10 +54,23 @@ func evaluateParenthesisedExpression(tokens []interface{}) (result, tokensRead i
 				i += tokensRead
 
 			case token.RightParen:
-				return acc, i + 1, nil
+				if endToken == nil || endToken == token.RightParen {
+					return acc, i + 1, nil
+				}
 
-			case token.Plus, token.Times:
+				return acc, i, nil
+
+			case token.Plus:
 				lastToken = tokens[i]
+
+			case token.Times:
+				subRes, tokensRead, err := evaluateUntil(tokens[i+1:], token.Times)
+				if err != nil {
+					return 0, i, fmt.Errorf("cannot evaluate parenthesised expression from token index %d: %w", i, err)
+				}
+				acc *= subRes
+				lastToken = token.Times
+				i += tokensRead
 			}
 		}
 	}
