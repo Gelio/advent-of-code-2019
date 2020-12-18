@@ -1,6 +1,8 @@
 package main
 
 import (
+	"aoc-2020/cmd/18/evaluate/evaluatea"
+	"aoc-2020/cmd/18/evaluate/evaluateb"
 	"aoc-2020/cmd/18/tokenizer"
 	"aoc-2020/internal/stdin"
 	"fmt"
@@ -25,7 +27,7 @@ func main() {
 		tokenLines = append(tokenLines, tokens)
 	}
 
-	res, err := solveA(tokenLines)
+	res, err := solve(tokenLines, evaluatea.Tokens)
 	if err != nil {
 		fmt.Println("Error when solving A:", err)
 		return
@@ -33,4 +35,11 @@ func main() {
 
 	fmt.Println("Result A:", res)
 
+	res, err = solve(tokenLines, evaluateb.Tokens)
+	if err != nil {
+		fmt.Println("Error when solving B:", err)
+		return
+	}
+
+	fmt.Println("Result B:", res)
 }
