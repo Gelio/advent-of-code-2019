@@ -1,21 +1,11 @@
-package main
+package evaluatea
 
 import (
-	"aoc-2020/cmd/18/tokenizer"
 	"aoc-2020/cmd/18/tokenizer/token"
 	"fmt"
 )
 
-func evaluateLine(line string) (int, error) {
-	tokens, err := tokenizer.Tokenize(line)
-	if err != nil {
-		return 0, fmt.Errorf("cannot tokenize line %q: %w", line, err)
-	}
-
-	return evaluateTokens(tokens)
-}
-
-func evaluateTokens(tokens []interface{}) (int, error) {
+func Tokens(tokens []interface{}) (int, error) {
 	res, tokensRead, err := evaluateParenthesisedExpression(tokens)
 	if err != nil {
 		return 0, err

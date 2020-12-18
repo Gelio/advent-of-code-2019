@@ -1,6 +1,8 @@
-package main
+package evaluatea_test
 
 import (
+	"aoc-2020/cmd/18/evaluate/evaluatea"
+	"aoc-2020/cmd/18/tokenizer"
 	"fmt"
 	"testing"
 
@@ -8,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEvaluateLine(t *testing.T) {
+func TestEvaluateTokens(t *testing.T) {
 	cases := []struct {
 		input          string
 		expectedResult int
@@ -23,8 +25,10 @@ func TestEvaluateLine(t *testing.T) {
 
 	for i, tt := range cases {
 		t.Run(fmt.Sprintf("case %d", i+1), func(t *testing.T) {
-			res, err := evaluateLine(tt.input)
-			require.NoError(t, err)
+			tokens, err := tokenizer.Tokenize(tt.input)
+			require.NoError(t, err, "tokenizing line")
+			res, err := evaluatea.Tokens(tokens)
+			require.NoError(t, err, "evaluating tokens")
 
 			assert.Equal(t, tt.expectedResult, res)
 		})
