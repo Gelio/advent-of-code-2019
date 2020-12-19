@@ -3,6 +3,7 @@ package rule
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -25,17 +26,27 @@ type Literal struct {
 }
 
 func ParseLines(lines []string) ([]Rule, error) {
-	var rules []Rule
+	rules := make(map[int]Rule)
+	var ruleIDs []int
+
 	for i, l := range lines {
 		rule, err := Parse(l)
 		if err != nil {
 			return nil, fmt.Errorf("cannot parse rule %d: %w", i, err)
 		}
 
-		rules = append(rules, rule)
+		rules[rule.ID] = rule
+		ruleIDs = append(ruleIDs, rule.ID)
 	}
 
-	return rules, nil
+	sort.Ints(ruleIDs)
+
+	rulesArr := make([]Rule, ruleIDs[len(ruleIDs)-1]+1)
+	for _, ruleID := range ruleIDs {
+		rulesArr[ruleID] = rules[ruleID]
+	}
+
+	return rulesArr, nil
 }
 
 func Parse(line string) (Rule, error) {
