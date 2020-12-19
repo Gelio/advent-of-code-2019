@@ -19,4 +19,12 @@ func main() {
 	}
 
 	fmt.Println("Result A:", res)
+
+	res, err = solveB(lines)
+	if err != nil {
+		fmt.Println("Error solving B:", err)
+		return
+	}
+
+	fmt.Println("Result B:", res)
 }
