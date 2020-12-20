@@ -32,5 +32,11 @@ func main() {
 		return
 	}
 
-	fmt.Println("Found", len(tileMap))
+	cornerIDs := tileMap.GetCornerTileIDs()
+	resA := 1
+	for _, id := range cornerIDs {
+		resA *= id
+	}
+
+	fmt.Println("Result A:", resA)
 }

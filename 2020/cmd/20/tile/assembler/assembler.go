@@ -7,21 +7,13 @@ import (
 )
 
 func Assemble(tiles []tile.Tile) (TileMap, error) {
-	ta, err := newTileAssembler(len(tiles))
+	ta, err := newTileAssembler(tiles)
 	if err != nil {
 		return nil, fmt.Errorf("cannot initialize tile assembler: %w", err)
 	}
 
-	for _, t := range tiles {
-		ta.variants[t.ID] = t.GetAllVariants()
-	}
-
-	for _, variants := range ta.variants {
-		for _, v := range variants {
-			if ok := ta.tryAssembleWithInitialTile(v); ok {
-				return ta.img, nil
-			}
-		}
+	if ta.tryAssemble() {
+		return ta.img, nil
 	}
 
 	return nil, fmt.Errorf("could not assemble the image")
@@ -34,8 +26,9 @@ type tileAssembler struct {
 	usedTileIDs map[int]bool
 }
 
-func newTileAssembler(tilesCount int) (tileAssembler, error) {
+func newTileAssembler(tiles []tile.Tile) (tileAssembler, error) {
 	var ta tileAssembler
+	tilesCount := len(tiles)
 	ta.usedTileIDs = make(map[int]bool)
 
 	ta.imgSize = int(math.Sqrt(float64(tilesCount)))
@@ -49,12 +42,23 @@ func newTileAssembler(tilesCount int) (tileAssembler, error) {
 	}
 
 	ta.variants = make(map[int][]tile.Tile)
+	for _, t := range tiles {
+		ta.variants[t.ID] = t.GetAllVariants()
+	}
 
 	return ta, nil
 }
 
-func (ta *tileAssembler) tryAssembleWithInitialTile(t tile.Tile) bool {
-	return ta.tryInsertTile(t, 0, 0)
+func (ta *tileAssembler) tryAssemble() bool {
+	for _, variants := range ta.variants {
+		for _, t := range variants {
+			if ok := ta.tryInsertTile(t, 0, 0); ok {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func (ta *tileAssembler) tryInsertTile(t tile.Tile, x, y int) bool {
@@ -92,7 +96,7 @@ func (ta *tileAssembler) tryInsertTile(t tile.Tile, x, y int) bool {
 		return true
 	}
 
-	ta.usedTileIDs[t.ID] = false
+	delete(ta.usedTileIDs, t.ID)
 	// NOTE: no need to reset ta.img, as it contains structs, not pointers
 
 	return false

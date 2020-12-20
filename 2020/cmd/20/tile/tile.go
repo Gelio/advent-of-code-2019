@@ -110,7 +110,7 @@ func (t Tile) rotate(rotation Rotation) Tile {
 			x1 := float64(x) - halfSide
 			y1 := float64(y) - halfSide
 
-			var angle = (float64(rotation) * math.Pi) / 180
+			angle := (float64(rotation) * math.Pi) / 180
 
 			newX := x1*math.Cos(angle) - y1*math.Sin(angle)
 			newY := x1*math.Sin(angle) + y1*math.Cos(angle)
