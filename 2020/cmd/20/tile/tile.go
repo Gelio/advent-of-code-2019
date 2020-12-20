@@ -1,25 +1,16 @@
 package tile
 
 import (
+	"aoc-2020/cmd/20/positionhashmap"
 	"fmt"
-	"math"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
-type Rotation int
-
 const (
 	Hash = '#'
 	Dot  = '.'
-)
-
-const (
-	NoRotation Rotation = 0
-	Rotate90   Rotation = 90
-	Rotate180  Rotation = 180
-	Rotate270  Rotation = 270
 )
 
 type Borders struct {
@@ -30,10 +21,10 @@ type Borders struct {
 }
 
 type Tile struct {
-	ID int
-	Rotation
-	Flipped bool
-	Hashes  [][]bool
+	ID       int
+	Rotation positionhashmap.Rotation
+	Flipped  bool
+	Hashes   positionhashmap.PositionHashMap
 	Borders
 }
 
@@ -54,73 +45,26 @@ func Parse(lines []string) (Tile, error) {
 		return t, fmt.Errorf("cannot parse tile ID (%q): %w", matches[1], err)
 	}
 
-	t.Hashes = make([][]bool, len(lines)-1)
-	for y, line := range lines[1:] {
-		t.Hashes[y] = make([]bool, len(line))
-		for x, c := range line {
-			if c == Hash {
-				t.Hashes[y][x] = true
-			}
-		}
-	}
+	t.Hashes = positionhashmap.FromLines(lines[1:])
 
 	t.fillBorders()
 
 	return t, nil
 }
 
-func (t Tile) clone() Tile {
-	newT := t
-
-	newT.Hashes = make([][]bool, len(t.Hashes))
-	for y, line := range t.Hashes {
-		newT.Hashes[y] = make([]bool, len(line))
-	}
-
-	return newT
-}
-
 func (t Tile) flipVertical() Tile {
-	newT := t.clone()
+	newT := t
 	newT.Flipped = true
-
-	for y := range t.Hashes {
-		for x := range t.Hashes[y] {
-			newT.Hashes[len(t.Hashes)-1-y][x] = t.Hashes[y][x]
-		}
-	}
+	newT.Hashes = t.Hashes.FlipVertical()
 	newT.fillBorders()
 
 	return newT
 }
 
-func (t Tile) rotate(rotation Rotation) Tile {
-	newT := t.clone()
-	sideLen := len(t.Hashes)
+func (t Tile) rotate(rotation positionhashmap.Rotation) Tile {
+	newT := t
 	newT.Rotation = rotation
-
-	for y := range t.Hashes {
-		for x := range t.Hashes[y] {
-			if !t.Hashes[y][x] {
-				continue
-			}
-
-			halfSide := float64(sideLen-1) / 2
-
-			x1 := float64(x) - halfSide
-			y1 := float64(y) - halfSide
-
-			angle := (float64(rotation) * math.Pi) / 180
-
-			newX := x1*math.Cos(angle) - y1*math.Sin(angle)
-			newY := x1*math.Sin(angle) + y1*math.Cos(angle)
-
-			finalX := int(math.Round(newX + halfSide))
-			finalY := int(math.Round(newY + halfSide))
-
-			newT.Hashes[finalY][finalX] = true
-		}
-	}
+	newT.Hashes = t.Hashes.Rotate(rotation)
 
 	newT.fillBorders()
 
@@ -130,10 +74,10 @@ func (t Tile) rotate(rotation Rotation) Tile {
 func (t Tile) GetAllVariants() []Tile {
 	variants := make([]Tile, 0, 8)
 
-	variants = append(variants, t, t.rotate(Rotate90), t.rotate(Rotate180), t.rotate(Rotate270))
+	variants = append(variants, t, t.rotate(positionhashmap.Rotate90), t.rotate(positionhashmap.Rotate180), t.rotate(positionhashmap.Rotate270))
 
 	flippedT := t.flipVertical()
-	variants = append(variants, flippedT, flippedT.rotate(Rotate90), flippedT.rotate(Rotate180), flippedT.rotate(Rotate270))
+	variants = append(variants, flippedT, flippedT.rotate(positionhashmap.Rotate90), flippedT.rotate(positionhashmap.Rotate180), flippedT.rotate(positionhashmap.Rotate270))
 
 	return variants
 }
