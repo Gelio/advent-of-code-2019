@@ -3,7 +3,6 @@ package tile
 import (
 	"aoc-2020/internal/stdin"
 	"fmt"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -259,7 +258,7 @@ func TestMatchingExistingVariants(t *testing.T) {
 			require.NoError(t, err, "parsing final tile")
 
 			for _, variant := range parsedTile.GetAllVariants() {
-				if reflect.DeepEqual(variant.Hashes, finalTile.Hashes) {
+				if variant.Borders == finalTile.Borders {
 					t.Logf("tile %d matches: %v %v", parsedTile.ID, variant.Rotation, variant.Flipped)
 					return
 				}

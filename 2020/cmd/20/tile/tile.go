@@ -89,7 +89,7 @@ func (t Tile) flipVertical() Tile {
 		}
 	}
 	newT.Flipped = true
-	t.fillBorders()
+	newT.fillBorders()
 
 	return newT
 }
@@ -122,7 +122,7 @@ func (t Tile) rotate(rotation Rotation) Tile {
 		}
 	}
 
-	t.fillBorders()
+	newT.fillBorders()
 
 	return newT
 }
@@ -139,24 +139,11 @@ func (t Tile) GetAllVariants() []Tile {
 }
 
 func (t Tile) MatchesRight(otherT Tile) bool {
-	for y, row := range t.Hashes {
-		if row[len(row)-1] != otherT.Hashes[y][0] {
-			return false
-		}
-	}
-
-	return true
+	return t.Borders.Right == t.Borders.Left
 }
 
 func (t Tile) MatchesBottom(otherT Tile) bool {
-	row := t.Hashes[len(t.Hashes)-1]
-	for x := range row {
-		if row[x] != otherT.Hashes[0][x] {
-			return false
-		}
-	}
-
-	return true
+	return t.Borders.Bottom == t.Borders.Top
 }
 
 func (t *Tile) fillBorders() {
