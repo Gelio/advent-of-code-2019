@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	input, err := stdin.ReadAllLines()
+	input, err := stdin.ReadLinesFromFile("input.txt")
 	if err != nil {
 		fmt.Println("Error reading input:", err)
 		return

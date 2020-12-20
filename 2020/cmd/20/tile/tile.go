@@ -82,13 +82,13 @@ func (t Tile) clone() Tile {
 
 func (t Tile) flipVertical() Tile {
 	newT := t.clone()
+	newT.Flipped = true
 
 	for y := range t.Hashes {
 		for x := range t.Hashes[y] {
 			newT.Hashes[len(t.Hashes)-1-y][x] = t.Hashes[y][x]
 		}
 	}
-	newT.Flipped = true
 	newT.fillBorders()
 
 	return newT
@@ -139,11 +139,11 @@ func (t Tile) GetAllVariants() []Tile {
 }
 
 func (t Tile) MatchesRight(otherT Tile) bool {
-	return t.Borders.Right == t.Borders.Left
+	return t.Borders.Right == otherT.Borders.Left
 }
 
 func (t Tile) MatchesBottom(otherT Tile) bool {
-	return t.Borders.Bottom == t.Borders.Top
+	return t.Borders.Bottom == otherT.Borders.Top
 }
 
 func (t *Tile) fillBorders() {

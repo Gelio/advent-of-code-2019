@@ -70,20 +70,26 @@ func (ta *tileAssembler) tryInsertTile(t tile.Tile, x, y int) bool {
 		}
 	}
 
-	leftmostTile := x == ta.imgSize-1
+	rightmostTile := x == ta.imgSize-1
 	bottommostTile := y == ta.imgSize-1
 
 	ta.img[y][x] = t
 	ta.usedTileIDs[t.ID] = true
 
-	if finalTile := leftmostTile && bottommostTile; finalTile {
+	if finalTile := rightmostTile && bottommostTile; finalTile {
 		return true
 	}
 
-	if leftmostTile {
-		ta.tryVariants(0, y+1)
-	} else {
-		ta.tryVariants(x+1, y)
+	nextX := x + 1
+	nextY := y
+
+	if rightmostTile {
+		nextX = 0
+		nextY = y + 1
+	}
+
+	if success := ta.tryVariants(nextX, nextY); success {
+		return true
 	}
 
 	ta.usedTileIDs[t.ID] = false
@@ -98,8 +104,8 @@ func (ta *tileAssembler) tryVariants(x, y int) bool {
 			continue
 		}
 
-		for _, variant := range variants {
-			if success := ta.tryInsertTile(variant, x, y); success {
+		for _, t := range variants {
+			if success := ta.tryInsertTile(t, x, y); success {
 				return true
 			}
 		}

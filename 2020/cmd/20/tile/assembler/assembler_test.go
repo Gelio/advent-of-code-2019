@@ -135,11 +135,7 @@ func TestAssembler(t *testing.T) {
 	tileMap, err := Assemble(tiles)
 	require.NoError(t, err, "cannot assemble tiles")
 
-	tileIDs := tileMap.GetTileIDs()
+	tileIDs := tileMap.GetCornerTileIDs()
 
-	assert.Equal(t, [][]int{
-		{1951, 2311, 3079},
-		{2729, 1427, 2473},
-		{2971, 1489, 1171},
-	}, tileIDs)
+	assert.ElementsMatch(t, []int{1951, 3079, 2971, 1171}, tileIDs)
 }

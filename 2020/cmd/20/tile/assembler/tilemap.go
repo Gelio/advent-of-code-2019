@@ -19,3 +19,9 @@ func (tm TileMap) GetTileIDs() [][]int {
 
 	return ids
 }
+
+func (tm TileMap) GetCornerTileIDs() []int {
+	lastIndex := len(tm) - 1
+
+	return []int{tm[0][0].ID, tm[lastIndex][0].ID, tm[0][lastIndex].ID, tm[lastIndex][lastIndex].ID}
+}
