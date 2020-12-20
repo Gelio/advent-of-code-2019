@@ -28,8 +28,8 @@ func TestParse(t *testing.T) {
 	tile, err := Parse(input)
 
 	assert.Equal(t, tile.ID, 1367, "invalid tile ID")
-	assert.Equal(t, tile.Borders.Top, "##.#..##.#", "invalid top border")
-	assert.Equal(t, tile.Borders.Bottom, "...##..#..", "invalid bottom border")
-	assert.Equal(t, tile.Borders.Left, "#....#.##.", "invalid left border")
-	assert.Equal(t, tile.Borders.Right, "#.#..####.", "invalid right border")
+	assert.True(t, tile.Hashes[0][0])
+	assert.True(t, tile.Hashes[0][1])
+	assert.False(t, tile.Hashes[0][2])
+	assert.False(t, tile.Hashes[1][0])
 }
