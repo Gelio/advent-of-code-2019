@@ -2,6 +2,7 @@ package stdin
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -9,31 +10,32 @@ import (
 
 // ReadAllLines reads all lines from stdin
 func ReadAllLines() ([]string, error) {
-	r := bufio.NewReader(os.Stdin)
-
-	return readLinesFromReader(r)
+	return ReadLinesFromReader(os.Stdin)
 }
 
 // ReadLinesFromFile reads all lines from an input file
 func ReadLinesFromFile(name string) ([]string, error) {
 	f, err := os.Open(name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot open file %s: %w", name, err)
 	}
 
-	r := bufio.NewReader(f)
-
-	return readLinesFromReader(r)
+	return ReadLinesFromReader(f)
 }
 
-func readLinesFromReader(r *bufio.Reader) ([]string, error) {
+// ReadLinesFromReader reads lines from a given reader
+func ReadLinesFromReader(ioR io.Reader) ([]string, error) {
 	var lines []string
+	r := bufio.NewReader(ioR)
 
 	for {
 		line, err := r.ReadString('\n')
 
 		if err != nil {
 			if err == io.EOF {
+				if len(line) > 0 {
+					lines = append(lines, strings.TrimSpace(line))
+				}
 				break
 			}
 
