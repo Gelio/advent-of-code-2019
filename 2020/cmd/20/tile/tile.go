@@ -17,7 +17,7 @@ const (
 
 const (
 	NoRotation Rotation = 0
-	Rotate90   Rotation = 270
+	Rotate90   Rotation = 90
 	Rotate180  Rotation = 180
 	Rotate270  Rotation = 270
 )
