@@ -36,6 +36,15 @@ func TestStateMachine(t *testing.T) {
 			notMatchingMessages: []string{"bababa", "aaabbb", "aaaabbb", ""},
 		},
 		{
+			rules: `0: 1 2 | 3 3 4 4
+1: 3 3 | 4 4
+2: 3 4 | 4 3
+3: "a"
+4: "b"`,
+			matchingMessages:    []string{"aaab", "aaba", "bbab", "bbba", "aabb"},
+			notMatchingMessages: []string{"aaaa", "bbbb", "bbba", "aabbb"},
+		},
+		{
 			rules: `0: 1 1
 1: 2 | 3
 2: 4
