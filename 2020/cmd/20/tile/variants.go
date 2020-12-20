@@ -24,56 +24,50 @@ type Borders struct {
 	Left   string
 }
 
-func (base Tile) GetAllVariants() []Tile {
-	variants := make([]Tile, 0, 4*2+1)
-	variants = append(variants, base)
+type variantGenerator struct {
+	variants           []Tile
+	encounteredBorders map[Borders]bool
+}
 
-	encounteredBorders := map[Borders]bool{base.Borders: true}
-
-	t := base
-	for r := NoRotation; r <= Rotate270; r++ {
-		t.Borders.rotate90()
-		t.Rotation = r
-
-		// No flip
-		if !encounteredBorders[t.Borders] {
-			encounteredBorders[t.Borders] = true
-			variants = append(variants, t)
-		}
-
-		originalBorders := t.Borders
-
-		// Vertical flip
-		t.Borders.flipVertical()
-		t.Flip = Vertical
-
-		if !encounteredBorders[t.Borders] {
-			encounteredBorders[t.Borders] = true
-			variants = append(variants, t)
-		}
-
-		// Horizontal flip
-		t.Borders = originalBorders
-		t.Borders.flipHorizontal()
-		t.Flip = Horizontal
-		if !encounteredBorders[t.Borders] {
-			encounteredBorders[t.Borders] = true
-			variants = append(variants, t)
-		}
-
-		// Restore flip for next iterations
-		t.Borders = originalBorders
-		t.Flip = NoFlip
+func (vg *variantGenerator) addTile(t Tile) {
+	if !vg.encounteredBorders[t.Borders] {
+		vg.encounteredBorders[t.Borders] = true
+		vg.variants = append(vg.variants, t)
 	}
+}
 
-	return variants
+func (t Tile) GetAllVariants() []Tile {
+	var vg variantGenerator
+	vg.variants = make([]Tile, 0, 8)
+	vg.encounteredBorders = make(map[Borders]bool)
+
+	t1 := t
+	vg.addTile(t1)
+	t1.Borders.rotate90()
+	vg.addTile(t1)
+	t1.Borders.rotate90()
+	vg.addTile(t1)
+	t1.Borders.rotate90()
+	vg.addTile(t1)
+
+	t1 = t
+	t1.Borders.flipVertical()
+	vg.addTile(t1)
+	t1.Borders.rotate90()
+	vg.addTile(t1)
+	t1.Borders.rotate90()
+	vg.addTile(t1)
+	t1.Borders.rotate90()
+	vg.addTile(t1)
+
+	return vg.variants
 }
 
 func (b *Borders) rotate90() {
 	top := b.Top
-	b.Top = b.Left
-	b.Left = b.Bottom
-	b.Bottom = b.Right
+	b.Top = reverseString(b.Left)
+	b.Left = reverseString(b.Bottom)
+	b.Bottom = reverseString(b.Right)
 	b.Right = top
 }
 
@@ -83,12 +77,16 @@ func (b *Borders) flipVertical() {
 	b.Right = swapFirstWithLast(b.Right)
 }
 
-func (b *Borders) flipHorizontal() {
-	b.Left, b.Right = b.Right, b.Left
-	b.Top = swapFirstWithLast(b.Top)
-	b.Bottom = swapFirstWithLast(b.Bottom)
-}
-
 func swapFirstWithLast(s string) string {
 	return s[len(s)-1:] + s[1:len(s)-1] + s[0:1]
+}
+
+func reverseString(s string) string {
+	res := make([]byte, 0, len(s))
+
+	for i := len(s) - 1; i >= 0; i-- {
+		res = append(res, s[i])
+	}
+
+	return string(res)
 }

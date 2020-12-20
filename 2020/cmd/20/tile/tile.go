@@ -11,7 +11,7 @@ type Tile struct {
 	ID int
 	Rotation
 	Flip
-	Borders Borders
+	Borders
 }
 
 func Parse(lines []string) (Tile, error) {
