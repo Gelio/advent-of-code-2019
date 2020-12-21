@@ -4,15 +4,26 @@ package main
 // allergen is in 1 ingredient
 
 func solveA(foods []food) (int, error) {
-	as := newAssigner(foods)
+	as := newAssigner()
 
-	as.assignAllergens(0, 0)
+	for _, f := range foods {
+		as.addFood(f)
+	}
+
+	as.assignSinglePossibilities()
+	// NOTE: yay, there is only 1 possible assignment If there were many, one would have to do
+	// backtracking on the possibleIngredients for each allergen
 
 	ingredientCounts := getIngredientsCount(foods)
 
+	ingredientsAssigned := make(map[ingredientName]bool)
+	for _, ingredient := range as.allergenAssignments {
+		ingredientsAssigned[ingredient] = true
+	}
+
 	sum := 0
 	for ingredient, count := range ingredientCounts {
-		if !as.ingredientEverAssigned[ingredient] {
+		if !ingredientsAssigned[ingredient] {
 			sum += count
 		}
 	}
@@ -21,75 +32,62 @@ func solveA(foods []food) (int, error) {
 }
 
 type assigner struct {
-	allergensAssignment    map[allergenName]ingredientName
-	ingredientsAssigned    map[ingredientName]bool
-	ingredientEverAssigned map[ingredientName]bool
-	foods                  []food
+	possibleIngredients map[allergenName]map[ingredientName]bool
+	allergenAssignments map[allergenName]ingredientName
 }
 
-func newAssigner(foods []food) assigner {
+func newAssigner() assigner {
 	var as assigner
-	as.allergensAssignment = make(map[allergenName]ingredientName)
-	as.ingredientsAssigned = make(map[ingredientName]bool)
-	as.ingredientEverAssigned = make(map[ingredientName]bool)
-	as.foods = foods
+	as.possibleIngredients = make(map[allergenName]map[ingredientName]bool)
+	as.allergenAssignments = make(map[allergenName]ingredientName)
 
 	return as
 }
 
-func (as *assigner) assignAllergens(foodIndex, allergenIndex int) bool {
-	if foodIndex == len(as.foods) {
-		for ingredient := range as.ingredientsAssigned {
-			as.ingredientEverAssigned[ingredient] = true
+func (as *assigner) addFood(f food) {
+	for _, allergen := range f.allegrens {
+		ingredientsInCurrentFood := make(map[ingredientName]bool)
+		for _, ingredient := range f.ingredients {
+			ingredientsInCurrentFood[ingredient] = true
 		}
 
-		return true
+		if possibleIngredients, ok := as.possibleIngredients[allergen]; ok {
+			for ingredient := range possibleIngredients {
+				if !ingredientsInCurrentFood[ingredient] {
+					delete(possibleIngredients, ingredient)
+				}
+			}
+		} else {
+			as.possibleIngredients[allergen] = ingredientsInCurrentFood
+		}
 	}
+}
 
-	if allergenIndex == len(as.foods[foodIndex].allegrens) {
-		return as.assignAllergens(foodIndex+1, 0)
-	}
+// Assign those allergens that only have 1 possible ingredient
+func (as *assigner) assignSinglePossibilities() {
+	assignedSome := true
+	for assignedSome {
+		assignedSome = false
 
-	allergen := as.foods[foodIndex].allegrens[allergenIndex]
-	f := as.foods[foodIndex]
+		for allergen, ingredients := range as.possibleIngredients {
+			if len(ingredients) != 1 {
+				continue
+			}
 
-	if assignedIngredient, allergenAssigned := as.allergensAssignment[allergen]; allergenAssigned {
-		// Check if the assigned ingredient appears in the ingredients list
-		hasIngredient := false
-		for _, ingredient := range f.ingredients {
-			if ingredient == assignedIngredient {
-				hasIngredient = true
-				break
+			var onlyIngredient ingredientName
+			for ingredient := range ingredients {
+				onlyIngredient = ingredient
+			}
+
+			assignedSome = true
+			as.allergenAssignments[allergen] = onlyIngredient
+			delete(as.possibleIngredients, allergen)
+
+			for _, otherIngredients := range as.possibleIngredients {
+				delete(otherIngredients, onlyIngredient)
 			}
 		}
-		if !hasIngredient {
-			return false
-		}
-
-		return as.assignAllergens(foodIndex, allergenIndex+1)
 	}
-
-	// unassignedAllergen := true
-
-	// Match unassigned allergen to an unassigned ingredient
-	for _, ingredient := range f.ingredients {
-		if as.ingredientsAssigned[ingredient] {
-			continue
-		}
-
-		as.allergensAssignment[allergen] = ingredient
-		as.ingredientsAssigned[ingredient] = true
-
-		if success := as.assignAllergens(foodIndex, allergenIndex+1); success {
-			return true
-			// unassignedAllergen = false
-		}
-
-		delete(as.allergensAssignment, allergen)
-		delete(as.ingredientsAssigned, ingredient)
-	}
-
-	return false
 }
 
 func getIngredientsCount(foods []food) map[ingredientName]int {
