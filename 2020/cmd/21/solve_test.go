@@ -16,6 +16,14 @@ func TestSolveA(t *testing.T) {
 	assert.Equal(t, 5, res)
 }
 
+func TestSolveB(t *testing.T) {
+	foods := getTestFoods(t)
+
+	res := solveB(foods)
+
+	assert.Equal(t, "mxmxvkd,sqjhc,fvjkl", res)
+}
+
 func getTestFoods(t *testing.T) []food {
 	input := strings.Split(`mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
 trh fvjkl sbzzf mxmxvkd (contains dairy)

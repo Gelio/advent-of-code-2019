@@ -24,4 +24,5 @@ func main() {
 	}
 
 	fmt.Println("Result A:", solveA(foods))
+	fmt.Println("Result B:", solveB(foods))
 }

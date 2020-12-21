@@ -1,5 +1,10 @@
 package main
 
+import (
+	"sort"
+	"strings"
+)
+
 // ingredient contains 0 or 1 allergens
 // allergen is in 1 ingredient
 
@@ -22,6 +27,25 @@ func solveA(foods []food) int {
 	}
 
 	return sum
+}
+
+func solveB(foods []food) string {
+	as := newAssigner()
+	as.FindAssignment(foods)
+
+	var allergens []string
+	for allergen := range as.allergenAssignments {
+		allergens = append(allergens, string(allergen))
+	}
+	sort.Strings(allergens)
+
+	var ingredientsWithAllergens []string
+	for _, allergen := range allergens {
+		ingredient := as.allergenAssignments[allergenName(allergen)]
+		ingredientsWithAllergens = append(ingredientsWithAllergens, string(ingredient))
+	}
+
+	return strings.Join(ingredientsWithAllergens, ",")
 }
 
 type assigner struct {
