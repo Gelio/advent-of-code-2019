@@ -23,10 +23,5 @@ func main() {
 		foods = append(foods, f)
 	}
 
-	res, err := solveA(foods)
-	if err != nil {
-		fmt.Println("Error solving A:", err)
-		return
-	}
-	fmt.Println("Result A:", res)
+	fmt.Println("Result A:", solveA(foods))
 }

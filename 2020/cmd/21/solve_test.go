@@ -9,6 +9,14 @@ import (
 )
 
 func TestSolveA(t *testing.T) {
+	foods := getTestFoods(t)
+
+	res := solveA(foods)
+
+	assert.Equal(t, 5, res)
+}
+
+func getTestFoods(t *testing.T) []food {
 	input := strings.Split(`mxmxvkd kfcds sqjhc nhms (contains dairy, fish)
 trh fvjkl sbzzf mxmxvkd (contains dairy)
 sqjhc fvjkl (contains soy)
@@ -22,8 +30,5 @@ sqjhc mxmxvkd sbzzf (contains fish)`, "\n")
 		foods = append(foods, f)
 	}
 
-	res, err := solveA(foods)
-	require.NoError(t, err, "solving A")
-
-	assert.Equal(t, 5, res)
+	return foods
 }

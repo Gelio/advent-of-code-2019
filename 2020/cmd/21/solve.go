@@ -3,16 +3,9 @@ package main
 // ingredient contains 0 or 1 allergens
 // allergen is in 1 ingredient
 
-func solveA(foods []food) (int, error) {
+func solveA(foods []food) int {
 	as := newAssigner()
-
-	for _, f := range foods {
-		as.addFood(f)
-	}
-
-	as.assignSinglePossibilities()
-	// NOTE: yay, there is only 1 possible assignment If there were many, one would have to do
-	// backtracking on the possibleIngredients for each allergen
+	as.FindAssignment(foods)
 
 	ingredientCounts := getIngredientsCount(foods)
 
@@ -28,7 +21,7 @@ func solveA(foods []food) (int, error) {
 		}
 	}
 
-	return sum, nil
+	return sum
 }
 
 type assigner struct {
@@ -42,6 +35,17 @@ func newAssigner() assigner {
 	as.allergenAssignments = make(map[allergenName]ingredientName)
 
 	return as
+}
+
+func (as *assigner) FindAssignment(foods []food) {
+	for _, f := range foods {
+		as.addFood(f)
+	}
+
+	as.assignSinglePossibilities()
+
+	// NOTE: yay, there is only 1 possible assignment If there were many, one would have to do
+	// backtracking on the possibleIngredients for each allergen
 }
 
 func (as *assigner) addFood(f food) {
