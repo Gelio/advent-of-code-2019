@@ -42,7 +42,7 @@ func playGameB(p1, p2 *player) (winner *player) {
 
 		// Check deck lengths and possibly recurse
 		if p1.deck.Length >= c1.Val && p2.deck.Length >= c2.Val {
-			p1Clone, p2Clone := p1.Clone(), p2.Clone()
+			p1Clone, p2Clone := p1.CloneWithLength(c1.Val), p2.CloneWithLength(c2.Val)
 			nextRoundWinner := playGameB(&p1Clone, &p2Clone)
 
 			if nextRoundWinner == &p1Clone {

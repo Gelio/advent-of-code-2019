@@ -76,3 +76,10 @@ func (d deck) Clone() deck {
 
 	return newDeck(cards)
 }
+
+func (d deck) CloneWithLength(length int) deck {
+	// NOTE: could be optimized by iterating over cards directly, instead of calling .Cards
+	cards := d.Cards()[0:length]
+
+	return newDeck(cards)
+}
