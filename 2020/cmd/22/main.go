@@ -37,4 +37,5 @@ func main() {
 	}
 
 	fmt.Println("Result A:", solveA(p1, p2))
+	fmt.Println("Result B:", solveB(p1, p2))
 }
