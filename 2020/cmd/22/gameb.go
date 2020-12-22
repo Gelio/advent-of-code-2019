@@ -1,37 +1,44 @@
 package main
 
-const maxDeckSize = 50
+// A trie tree for storing decks encountered during a round
+// Each node represents a card at particular distance from the top of the deck.
+// Edges point to next cards in the deck
+type gameBDecks map[int]gameBDecks
 
-type gameBDeckCards [maxDeckSize]int
+func (decks gameBDecks) AddDeck(d *deck) (existingDeck bool) {
+	return decks.addCards(d.Top)
+}
 
-func getGameBDeckCards(d *deck) gameBDeckCards {
-	var cards gameBDeckCards
+func (decks gameBDecks) addCards(c *card) (existingDeck bool) {
+	if c == nil {
+		// Use -1 to mark that some deck ended here
+		if _, ok := decks[-1]; ok {
+			return true
+		}
 
-	c := d.Top
-	i := 0
-	for c != nil {
-		cards[i] = c.Val
-		i++
-		c = c.Next
+		decks[-1] = nil
+		return false
 	}
 
-	return cards
+	nextTrieNode, ok := decks[c.Val]
+	if ok {
+		return nextTrieNode.addCards(c.Next)
+	}
+
+	decks[c.Val] = make(gameBDecks)
+	decks[c.Val].addCards(c.Next)
+	return false
 }
 
 func playGameB(d1, d2 *deck) (winner *deck) {
-	encounteredDecksP1 := make(map[gameBDeckCards]bool)
-	encounteredDecksP2 := make(map[gameBDeckCards]bool)
+	encounteredDecksP1 := make(gameBDecks)
+	encounteredDecksP2 := make(gameBDecks)
 
 	for d1.Length > 0 && d2.Length > 0 {
 		// Deal with cache
-		p1AllCards := getGameBDeckCards(d1)
-		p2AllCards := getGameBDeckCards(d2)
-		if encounteredDecksP1[p1AllCards] && encounteredDecksP2[p2AllCards] {
+		if encounteredDecksP1.AddDeck(d1) && encounteredDecksP2.AddDeck(d2) {
 			return d1
 		}
-
-		encounteredDecksP1[p1AllCards] = true
-		encounteredDecksP2[p2AllCards] = true
 
 		// Drawing cards and determining which game to play
 		c1 := d1.PopCard()
