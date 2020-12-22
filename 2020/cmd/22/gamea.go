@@ -1,37 +1,18 @@
 package main
 
-type player struct {
-	ID int
-	deck
-}
-
-func (p player) Clone() player {
-	return player{
-		ID:   p.ID,
-		deck: p.deck.Clone(),
-	}
-}
-
-func (p player) CloneWithLength(deckLength int) player {
-	return player{
-		ID:   p.ID,
-		deck: p.deck.CloneWithLength(deckLength),
-	}
-}
-
-func playGameA(p1, p2 *player) (winner *player) {
-	for p1.deck.Length > 0 && p2.deck.Length > 0 {
-		c1 := p1.deck.PopCard()
-		c2 := p2.deck.PopCard()
+func playGameA(d1, d2 *deck) (winner *deck) {
+	for d1.Length > 0 && d2.Length > 0 {
+		c1 := d1.PopCard()
+		c2 := d2.PopCard()
 
 		var winnerDeck *deck
 		var betterCard, worseCard *card
 		if c1.Val > c2.Val {
-			winnerDeck = &p1.deck
+			winnerDeck = d1
 			betterCard = c1
 			worseCard = c2
 		} else {
-			winnerDeck = &p2.deck
+			winnerDeck = d2
 			betterCard = c2
 			worseCard = c1
 		}
@@ -40,9 +21,9 @@ func playGameA(p1, p2 *player) (winner *player) {
 		winnerDeck.AddCard(worseCard)
 	}
 
-	if p1.deck.Length > 0 {
-		return p1
+	if d1.Length > 0 {
+		return d1
 	}
 
-	return p2
+	return d2
 }

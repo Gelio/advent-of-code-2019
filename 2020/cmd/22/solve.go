@@ -1,14 +1,14 @@
 package main
 
-func solveA(p1, p2 player) int {
-	p1Clone, p2Clone := p1.Clone(), p2.Clone()
+func solveA(d1, d2 deck) int {
+	p1Clone, p2Clone := d1.Clone(), d2.Clone()
 	winner := playGameA(&p1Clone, &p2Clone)
 
 	return winner.Score()
 }
 
-func solveB(p1, p2 player) int {
-	p1Clone, p2Clone := p1.Clone(), p2.Clone()
+func solveB(d1, d2 deck) int {
+	p1Clone, p2Clone := d1.Clone(), d2.Clone()
 	winner := playGameB(&p1Clone, &p2Clone)
 
 	return winner.Score()
