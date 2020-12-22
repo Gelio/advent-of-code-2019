@@ -44,6 +44,7 @@ func (d *deck) PopCard() *card {
 	return c
 }
 
+// NOTE: probably unnecessary
 func (d deck) Cards() []int {
 	var cards []int
 
@@ -54,4 +55,24 @@ func (d deck) Cards() []int {
 	}
 
 	return cards
+}
+
+func (d deck) Score() int {
+	// NOTE: could be optimized by iterating over cards directly, instead of calling .Cards
+	winnerCards := d.Cards()
+
+	result := 0
+
+	for i, c := range winnerCards {
+		result += (d.Length - i) * c
+	}
+
+	return result
+}
+
+func (d deck) Clone() deck {
+	// NOTE: could be optimized by iterating over cards directly, instead of calling .Cards
+	cards := d.Cards()
+
+	return newDeck(cards)
 }

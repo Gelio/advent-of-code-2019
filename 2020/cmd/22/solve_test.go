@@ -17,5 +17,5 @@ func TestSolveA(t *testing.T) {
 		deck: newDeck([]int{5, 8, 4, 7, 10}),
 	}
 
-	assert.Equal(t, 306, solveA(&p1, &p2), "invalid result")
+	assert.Equal(t, 306, solveA(p1, p2), "invalid result")
 }

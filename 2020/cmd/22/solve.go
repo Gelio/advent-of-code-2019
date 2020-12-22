@@ -1,15 +1,8 @@
 package main
 
-func solveA(p1, p2 *player) int {
-	winner := playGame(p1, p2)
+func solveA(p1, p2 player) int {
+	p1Clone, p2Clone := p1.Clone(), p2.Clone()
+	winner := playGameA(&p1Clone, &p2Clone)
 
-	winnerCards := winner.Cards()
-
-	result := 0
-
-	for i, c := range winnerCards {
-		result += (winner.deck.Length - i) * c
-	}
-
-	return result
+	return winner.Score()
 }

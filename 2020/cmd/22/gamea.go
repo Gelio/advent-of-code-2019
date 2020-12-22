@@ -5,7 +5,14 @@ type player struct {
 	deck
 }
 
-func playGame(p1, p2 *player) (winner *player) {
+func (p player) Clone() player {
+	return player{
+		ID:   p.ID,
+		deck: p.deck.Clone(),
+	}
+}
+
+func playGameA(p1, p2 *player) (winner *player) {
 	for p1.deck.Length > 0 && p2.deck.Length > 0 {
 		c1 := p1.deck.PopCard()
 		c2 := p2.deck.PopCard()

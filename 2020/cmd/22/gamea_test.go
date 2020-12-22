@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGame(t *testing.T) {
+func TestGameA(t *testing.T) {
 	p1 := player{
 		ID:   1,
 		deck: newDeck([]int{9, 2, 6, 3, 1}),
@@ -17,7 +17,7 @@ func TestGame(t *testing.T) {
 		deck: newDeck([]int{5, 8, 4, 7, 10}),
 	}
 
-	winner := playGame(&p1, &p2)
+	winner := playGameA(&p1, &p2)
 
 	assert.Equal(t, &p2, winner, "wrong winner")
 

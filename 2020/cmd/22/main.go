@@ -36,5 +36,5 @@ func main() {
 		deck: newDeck(player2Cards),
 	}
 
-	fmt.Println("Result A:", solveA(&p1, &p2))
+	fmt.Println("Result A:", solveA(p1, p2))
 }
