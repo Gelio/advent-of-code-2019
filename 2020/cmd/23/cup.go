@@ -77,14 +77,7 @@ func simulate(cups map[int]*cup, startingNum, moves int) error {
 }
 
 func getCupNumbers(cups map[int]*cup) ([]int, error) {
-	var firstCup *cup
-
-	for num, c := range cups {
-		if num == 1 {
-			firstCup = c
-			break
-		}
-	}
+	firstCup := cups[1]
 
 	if firstCup == nil {
 		return nil, fmt.Errorf("cup with number 1 was not found")
