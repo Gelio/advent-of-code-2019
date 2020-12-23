@@ -7,14 +7,9 @@ import (
 )
 
 func solveA(input string, moves int) (string, error) {
-	rawNums := strings.Split(input, "")
-	var nums []int
-	for _, rawNum := range rawNums {
-		num, err := strconv.Atoi(rawNum)
-		if err != nil {
-			return "", fmt.Errorf("cannot parse number %q: %w", rawNum, err)
-		}
-		nums = append(nums, num)
+	nums, err := parseNums(input)
+	if err != nil {
+		return "", fmt.Errorf("cannot parse input: %w", err)
 	}
 
 	cups := getCupsFromNums(nums)
@@ -33,4 +28,19 @@ func solveA(input string, moves int) (string, error) {
 
 	// Remember to omit the initial 1
 	return strings.Join(resultCupRawNums[1:], ""), nil
+}
+
+func parseNums(input string) ([]int, error) {
+	rawNums := strings.Split(input, "")
+	var nums []int
+	for _, rawNum := range rawNums {
+		num, err := strconv.Atoi(rawNum)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse number %q: %w", rawNum, err)
+		}
+
+		nums = append(nums, num)
+	}
+
+	return nums, nil
 }
