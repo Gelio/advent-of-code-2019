@@ -12,11 +12,19 @@ func main() {
 		return
 	}
 
-	resA, err := solveA(input)
+	res, err := solveA(input)
 	if err != nil {
 		fmt.Println("Error while solving A:", err)
 		return
 	}
 
-	fmt.Println("Result A:", resA)
+	fmt.Println("Result A:", res)
+
+	res, err = solveB(input, 100)
+	if err != nil {
+		fmt.Println("Error while solving B:", err)
+		return
+	}
+
+	fmt.Println("Result B:", res)
 }

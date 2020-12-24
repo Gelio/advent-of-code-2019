@@ -17,6 +17,17 @@ type position struct {
 	x, y int
 }
 
+func (p position) getNeighboringTilesPositions() []position {
+	return []position{
+		{p.x, p.y - 1},
+		{p.x + 1, p.y - 1},
+		{p.x + 1, p.y},
+		{p.x, p.y + 1},
+		{p.x - 1, p.y + 1},
+		{p.x - 1, p.y},
+	}
+}
+
 func getPosition(moves []move) position {
 	var p position
 	for _, m := range moves {
