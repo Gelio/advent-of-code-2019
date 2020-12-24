@@ -5,7 +5,7 @@ import (
 	"aoc-2020/cmd/20/tile"
 )
 
-type TileMap [][]tile.Tile
+type TileMap [][]*tile.Tile
 
 func (tm TileMap) GetTileIDs() [][]int {
 	var ids [][]int

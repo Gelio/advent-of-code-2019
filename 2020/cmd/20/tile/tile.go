@@ -61,32 +61,32 @@ func (t Tile) flipVertical() Tile {
 	return newT
 }
 
-func (t Tile) rotate(rotation positionhashmap.Rotation) Tile {
+func (t Tile) rotate(rotation positionhashmap.Rotation) *Tile {
 	newT := t
 	newT.Rotation = rotation
 	newT.Hashes = t.Hashes.Rotate(rotation)
 
 	newT.fillBorders()
 
-	return newT
+	return &newT
 }
 
-func (t Tile) GetAllVariants() []Tile {
-	variants := make([]Tile, 0, 8)
+func (t Tile) GetAllVariants() []*Tile {
+	variants := make([]*Tile, 0, 8)
 
-	variants = append(variants, t, t.rotate(positionhashmap.Rotate90), t.rotate(positionhashmap.Rotate180), t.rotate(positionhashmap.Rotate270))
+	variants = append(variants, &t, t.rotate(positionhashmap.Rotate90), t.rotate(positionhashmap.Rotate180), t.rotate(positionhashmap.Rotate270))
 
 	flippedT := t.flipVertical()
-	variants = append(variants, flippedT, flippedT.rotate(positionhashmap.Rotate90), flippedT.rotate(positionhashmap.Rotate180), flippedT.rotate(positionhashmap.Rotate270))
+	variants = append(variants, &flippedT, flippedT.rotate(positionhashmap.Rotate90), flippedT.rotate(positionhashmap.Rotate180), flippedT.rotate(positionhashmap.Rotate270))
 
 	return variants
 }
 
-func (t Tile) MatchesRight(otherT Tile) bool {
+func (t Tile) MatchesRight(otherT *Tile) bool {
 	return t.Borders.Right == otherT.Borders.Left
 }
 
-func (t Tile) MatchesBottom(otherT Tile) bool {
+func (t Tile) MatchesBottom(otherT *Tile) bool {
 	return t.Borders.Bottom == otherT.Borders.Top
 }
 
