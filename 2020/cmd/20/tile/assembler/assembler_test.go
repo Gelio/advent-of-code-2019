@@ -166,6 +166,7 @@ func TestAssembler(t *testing.T) {
 func BenchmarkAssembler(b *testing.B) {
 	for _, tt := range cases {
 		b.Run(tt.name, func(b *testing.B) {
+			b.StopTimer()
 			input, err := tt.getInput()
 
 			require.NoError(b, err, "cannot read input")
@@ -180,6 +181,7 @@ func BenchmarkAssembler(b *testing.B) {
 				tiles = append(tiles, tile)
 			}
 
+			b.StartTimer()
 			for i := 0; i < b.N; i++ {
 				Assemble(tiles)
 			}
