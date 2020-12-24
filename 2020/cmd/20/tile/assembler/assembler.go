@@ -2,6 +2,7 @@ package assembler
 
 import (
 	"aoc-2020/cmd/20/tile"
+	"context"
 	"fmt"
 	"math"
 	"runtime"
@@ -27,15 +28,17 @@ func Assemble(tiles []tile.Tile) (TileMap, error) {
 		workerReadyChan <- i
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	for tileID := range ta.variants {
 		select {
 		case workerID := <-workerReadyChan:
 			ta := workerAssemblers[workerID]
-			go ta.tryAssemble(tileID, workerReadyChan, assemblySuccessChan)
+			go ta.tryAssemble(ctx, tileID, workerReadyChan, assemblySuccessChan)
 
 		case workerID := <-assemblySuccessChan:
 			ta := workerAssemblers[workerID]
-			// TODO: cancel other goroutines?
 			return ta.img, nil
 		}
 	}
@@ -102,9 +105,9 @@ func (ta tileAssembler) clone() tileAssembler {
 	return ta
 }
 
-func (ta *tileAssembler) tryAssemble(startingTileID int, readyChan chan<- int, successChan chan<- int) {
+func (ta *tileAssembler) tryAssemble(ctx context.Context, startingTileID int, readyChan chan<- int, successChan chan<- int) {
 	for _, t := range ta.variants[startingTileID] {
-		if ok := ta.insertTile(t, 0, 0); ok {
+		if ok := ta.insertTile(ctx, t, 0, 0); ok {
 			successChan <- ta.ID
 			break
 		}
@@ -113,9 +116,15 @@ func (ta *tileAssembler) tryAssemble(startingTileID int, readyChan chan<- int, s
 	readyChan <- ta.ID
 }
 
-func (ta *tileAssembler) insertTile(t *tile.Tile, x, y int) bool {
+func (ta *tileAssembler) insertTile(ctx context.Context, t *tile.Tile, x, y int) bool {
 	rightmostTile := x == ta.imgSize-1
 	bottommostTile := y == ta.imgSize-1
+
+	select {
+	case <-ctx.Done():
+		return false
+	default:
+	}
 
 	ta.img[y][x] = t
 	ta.usedTileIDs[t.ID] = true
@@ -132,7 +141,7 @@ func (ta *tileAssembler) insertTile(t *tile.Tile, x, y int) bool {
 		nextY = y + 1
 	}
 
-	if success := ta.tryVariants(nextX, nextY); success {
+	if success := ta.tryVariants(ctx, nextX, nextY); success {
 		return true
 	}
 
@@ -142,7 +151,7 @@ func (ta *tileAssembler) insertTile(t *tile.Tile, x, y int) bool {
 	return false
 }
 
-func (ta *tileAssembler) tryVariants(x, y int) bool {
+func (ta *tileAssembler) tryVariants(ctx context.Context, x, y int) bool {
 	var variantsToTry []*tile.Tile
 	if x > 0 {
 		variantsToTry = ta.leftBorderVariants[ta.img[y][x-1].Borders.Right]
@@ -161,7 +170,7 @@ func (ta *tileAssembler) tryVariants(x, y int) bool {
 			continue
 		}
 
-		if success := ta.insertTile(variant, x, y); success {
+		if success := ta.insertTile(ctx, variant, x, y); success {
 			return true
 		}
 	}
