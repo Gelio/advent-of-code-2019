@@ -4,6 +4,7 @@ import (
 	"aoc-2020/cmd/20/tile"
 	"fmt"
 	"math"
+	"runtime"
 )
 
 func Assemble(tiles []tile.Tile) (TileMap, error) {
@@ -12,14 +13,38 @@ func Assemble(tiles []tile.Tile) (TileMap, error) {
 		return nil, fmt.Errorf("cannot initialize tile assembler: %w", err)
 	}
 
-	if ta.tryAssemble() {
-		return ta.img, nil
+	// Multiple workers are initialized. Each tries to assemble the image starting with a given tile
+	// ID. If it succeeds, it signals that via a channel. If not, it signals it is ready for more work
+	workersCount := runtime.GOMAXPROCS(0)
+	workerAssemblers := []*tileAssembler{&ta}
+	workerReadyChan := make(chan int, workersCount)
+	workerReadyChan <- 0
+	assemblySuccessChan := make(chan int)
+	for i := 1; i < workersCount; i++ {
+		taClone := ta.clone()
+		taClone.ID = i
+		workerAssemblers = append(workerAssemblers, &taClone)
+		workerReadyChan <- i
+	}
+
+	for tileID := range ta.variants {
+		select {
+		case workerID := <-workerReadyChan:
+			ta := workerAssemblers[workerID]
+			go ta.tryAssemble(tileID, workerReadyChan, assemblySuccessChan)
+
+		case workerID := <-assemblySuccessChan:
+			ta := workerAssemblers[workerID]
+			// TODO: cancel other goroutines?
+			return ta.img, nil
+		}
 	}
 
 	return nil, fmt.Errorf("could not assemble the image")
 }
 
 type tileAssembler struct {
+	ID          int
 	variants    map[int][]*tile.Tile
 	imgSize     int
 	img         TileMap
@@ -28,6 +53,11 @@ type tileAssembler struct {
 	// to match a new tile
 	leftBorderVariants map[string][]*tile.Tile
 	topBorderVariants  map[string][]*tile.Tile
+}
+
+type assemblingResult struct {
+	assemblerID int
+	success     bool
 }
 
 func newTileAssembler(tiles []tile.Tile) (tileAssembler, error) {
@@ -61,16 +91,26 @@ func newTileAssembler(tiles []tile.Tile) (tileAssembler, error) {
 	return ta, nil
 }
 
-func (ta *tileAssembler) tryAssemble() bool {
-	for _, variants := range ta.variants {
-		for _, t := range variants {
-			if ok := ta.insertTile(t, 0, 0); ok {
-				return true
-			}
+func (ta tileAssembler) clone() tileAssembler {
+	// Clone only the maps that will be used for reading and writing in concurrent goroutines
+	ta.usedTileIDs = make(map[int]bool)
+	ta.img = make(TileMap, ta.imgSize)
+	for y := 0; y < ta.imgSize; y++ {
+		ta.img[y] = make([]*tile.Tile, ta.imgSize)
+	}
+
+	return ta
+}
+
+func (ta *tileAssembler) tryAssemble(startingTileID int, readyChan chan<- int, successChan chan<- int) {
+	for _, t := range ta.variants[startingTileID] {
+		if ok := ta.insertTile(t, 0, 0); ok {
+			successChan <- ta.ID
+			break
 		}
 	}
 
-	return false
+	readyChan <- ta.ID
 }
 
 func (ta *tileAssembler) insertTile(t *tile.Tile, x, y int) bool {
