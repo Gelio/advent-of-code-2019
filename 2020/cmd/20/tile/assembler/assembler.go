@@ -24,12 +24,18 @@ type tileAssembler struct {
 	imgSize     int
 	img         TileMap
 	usedTileIDs map[int]bool
+	// Cache tiles with corresponding variants to consider only tiles with matching borders when trying
+	// to match a new tile
+	leftBorderVariants map[string][]tile.Tile
+	topBorderVariants  map[string][]tile.Tile
 }
 
 func newTileAssembler(tiles []tile.Tile) (tileAssembler, error) {
 	var ta tileAssembler
 	tilesCount := len(tiles)
 	ta.usedTileIDs = make(map[int]bool)
+	ta.leftBorderVariants = make(map[string][]tile.Tile)
+	ta.topBorderVariants = make(map[string][]tile.Tile)
 
 	ta.imgSize = int(math.Sqrt(float64(tilesCount)))
 	if math.Pow(float64(ta.imgSize), float64(2)) != float64(tilesCount) {
@@ -43,7 +49,13 @@ func newTileAssembler(tiles []tile.Tile) (tileAssembler, error) {
 
 	ta.variants = make(map[int][]tile.Tile)
 	for _, t := range tiles {
-		ta.variants[t.ID] = t.GetAllVariants()
+		variants := t.GetAllVariants()
+		ta.variants[t.ID] = variants
+
+		for _, variant := range variants {
+			ta.leftBorderVariants[variant.Left] = append(ta.leftBorderVariants[variant.Left], variant)
+			ta.topBorderVariants[variant.Top] = append(ta.topBorderVariants[variant.Top], variant)
+		}
 	}
 
 	return ta, nil
@@ -52,7 +64,7 @@ func newTileAssembler(tiles []tile.Tile) (tileAssembler, error) {
 func (ta *tileAssembler) tryAssemble() bool {
 	for _, variants := range ta.variants {
 		for _, t := range variants {
-			if ok := ta.tryInsertTile(t, 0, 0); ok {
+			if ok := ta.insertTile(t, 0, 0); ok {
 				return true
 			}
 		}
@@ -61,19 +73,7 @@ func (ta *tileAssembler) tryAssemble() bool {
 	return false
 }
 
-func (ta *tileAssembler) tryInsertTile(t tile.Tile, x, y int) bool {
-	if x > 0 {
-		if !ta.img[y][x-1].MatchesRight(t) {
-			return false
-		}
-	}
-
-	if y > 0 {
-		if !ta.img[y-1][x].MatchesBottom(t) {
-			return false
-		}
-	}
-
+func (ta *tileAssembler) insertTile(t tile.Tile, x, y int) bool {
 	rightmostTile := x == ta.imgSize-1
 	bottommostTile := y == ta.imgSize-1
 
@@ -103,15 +103,26 @@ func (ta *tileAssembler) tryInsertTile(t tile.Tile, x, y int) bool {
 }
 
 func (ta *tileAssembler) tryVariants(x, y int) bool {
-	for tileID, variants := range ta.variants {
-		if ta.usedTileIDs[tileID] {
+	var variantsToTry []tile.Tile
+	if x > 0 {
+		variantsToTry = ta.leftBorderVariants[ta.img[y][x-1].Borders.Right]
+		// NOTE: will have to check top border when going through variants 1 by 1
+	} else if y > 0 {
+		variantsToTry = ta.topBorderVariants[ta.img[y-1][x].Borders.Bottom]
+		// NOTE: x == 0, so no need to check the left border here
+	}
+
+	for _, variant := range variantsToTry {
+		if ta.usedTileIDs[variant.ID] {
 			continue
 		}
 
-		for _, t := range variants {
-			if success := ta.tryInsertTile(t, x, y); success {
-				return true
-			}
+		if x > 0 && y > 0 && !ta.img[y-1][x].MatchesBottom(variant) {
+			continue
+		}
+
+		if success := ta.insertTile(variant, x, y); success {
+			return true
 		}
 	}
 
