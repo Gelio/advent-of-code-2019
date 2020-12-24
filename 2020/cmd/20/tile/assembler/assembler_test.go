@@ -11,131 +11,154 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var cases = []struct {
+	name              string
+	getInput          func() ([]string, error)
+	expectedCornerIDs []int
+}{
+	{
+		name: "small example",
+		getInput: func() ([]string, error) {
+			return stdin.ReadLinesFromReader(strings.NewReader(`Tile 2311:
+    ..##.#..#.
+    ##..#.....
+    #...##..#.
+    ####.#...#
+    ##.##.###.
+    ##...#.###
+    .#.#.#..##
+    ..#....#..
+    ###...#.#.
+    ..###..###
+
+    Tile 1951:
+    #.##...##.
+    #.####...#
+    .....#..##
+    #...######
+    .##.#....#
+    .###.#####
+    ###.##.##.
+    .###....#.
+    ..#.#..#.#
+    #...##.#..
+
+    Tile 1171:
+    ####...##.
+    #..##.#..#
+    ##.#..#.#.
+    .###.####.
+    ..###.####
+    .##....##.
+    .#...####.
+    #.##.####.
+    ####..#...
+    .....##...
+
+    Tile 1427:
+    ###.##.#..
+    .#..#.##..
+    .#.##.#..#
+    #.#.#.##.#
+    ....#...##
+    ...##..##.
+    ...#.#####
+    .#.####.#.
+    ..#..###.#
+    ..##.#..#.
+
+    Tile 1489:
+    ##.#.#....
+    ..##...#..
+    .##..##...
+    ..#...#...
+    #####...#.
+    #..#.#.#.#
+    ...#.#.#..
+    ##.#...##.
+    ..##.##.##
+    ###.##.#..
+
+    Tile 2473:
+    #....####.
+    #..#.##...
+    #.##..#...
+    ######.#.#
+    .#...#.#.#
+    .#########
+    .###.#..#.
+    ########.#
+    ##...##.#.
+    ..###.#.#.
+
+    Tile 2971:
+    ..#.#....#
+    #...###...
+    #.#.###...
+    ##.##..#..
+    .#####..##
+    .#..####.#
+    #..#.#..#.
+    ..####.###
+    ..#.#.###.
+    ...#.#.#.#
+
+    Tile 2729:
+    ...#.#.#.#
+    ####.#....
+    ..#.#.....
+    ....#..#.#
+    .##..##.#.
+    .#.####...
+    ####.#.#..
+    ##.####...
+    ##..#.##..
+    #.##...##.
+
+    Tile 3079:
+    #.#.#####.
+    .#..######
+    ..#.......
+    ######....
+    ####.#..#.
+    .#...#.##.
+    #.#####.##
+    ..#.###...
+    ..#.......
+    ..#.###...`))
+		},
+		expectedCornerIDs: []int{1951, 3079, 2971, 1171},
+	},
+	{
+		name:              "full input",
+		getInput:          func() ([]string, error) { return stdin.ReadLinesFromFile("../../input.txt") },
+		expectedCornerIDs: []int{3593, 2797, 3517, 3167},
+	},
+}
+
 func TestAssembler(t *testing.T) {
-	input, err := stdin.ReadLinesFromReader(strings.NewReader(`Tile 2311:
-  ..##.#..#.
-  ##..#.....
-  #...##..#.
-  ####.#...#
-  ##.##.###.
-  ##...#.###
-  .#.#.#..##
-  ..#....#..
-  ###...#.#.
-  ..###..###
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			input, err := tt.getInput()
 
-  Tile 1951:
-  #.##...##.
-  #.####...#
-  .....#..##
-  #...######
-  .##.#....#
-  .###.#####
-  ###.##.##.
-  .###....#.
-  ..#.#..#.#
-  #...##.#..
+			require.NoError(t, err, "cannot read input")
 
-  Tile 1171:
-  ####...##.
-  #..##.#..#
-  ##.#..#.#.
-  .###.####.
-  ..###.####
-  .##....##.
-  .#...####.
-  #.##.####.
-  ####..#...
-  .....##...
+			rawTiles := testcases.SplitTestCaseLines(input)
 
-  Tile 1427:
-  ###.##.#..
-  .#..#.##..
-  .#.##.#..#
-  #.#.#.##.#
-  ....#...##
-  ...##..##.
-  ...#.#####
-  .#.####.#.
-  ..#..###.#
-  ..##.#..#.
+			var tiles []tile.Tile
+			for _, rawTile := range rawTiles {
+				tile, err := tile.Parse(rawTile)
+				require.NoError(t, err, "cannot parse tiles")
 
-  Tile 1489:
-  ##.#.#....
-  ..##...#..
-  .##..##...
-  ..#...#...
-  #####...#.
-  #..#.#.#.#
-  ...#.#.#..
-  ##.#...##.
-  ..##.##.##
-  ###.##.#..
+				tiles = append(tiles, tile)
+			}
 
-  Tile 2473:
-  #....####.
-  #..#.##...
-  #.##..#...
-  ######.#.#
-  .#...#.#.#
-  .#########
-  .###.#..#.
-  ########.#
-  ##...##.#.
-  ..###.#.#.
+			tileMap, err := Assemble(tiles)
+			require.NoError(t, err, "cannot assemble tiles")
 
-  Tile 2971:
-  ..#.#....#
-  #...###...
-  #.#.###...
-  ##.##..#..
-  .#####..##
-  .#..####.#
-  #..#.#..#.
-  ..####.###
-  ..#.#.###.
-  ...#.#.#.#
+			tileIDs := tileMap.GetCornerTileIDs()
 
-  Tile 2729:
-  ...#.#.#.#
-  ####.#....
-  ..#.#.....
-  ....#..#.#
-  .##..##.#.
-  .#.####...
-  ####.#.#..
-  ##.####...
-  ##..#.##..
-  #.##...##.
-
-  Tile 3079:
-  #.#.#####.
-  .#..######
-  ..#.......
-  ######....
-  ####.#..#.
-  .#...#.##.
-  #.#####.##
-  ..#.###...
-  ..#.......
-  ..#.###...`))
-
-	require.NoError(t, err, "cannot read input")
-
-	rawTiles := testcases.SplitTestCaseLines(input)
-
-	var tiles []tile.Tile
-	for _, rawTile := range rawTiles {
-		tile, err := tile.Parse(rawTile)
-		require.NoError(t, err, "cannot parse tiles")
-
-		tiles = append(tiles, tile)
+			assert.ElementsMatch(t, tt.expectedCornerIDs, tileIDs)
+		})
 	}
-
-	tileMap, err := Assemble(tiles)
-	require.NoError(t, err, "cannot assemble tiles")
-
-	tileIDs := tileMap.GetCornerTileIDs()
-
-	assert.ElementsMatch(t, []int{1951, 3079, 2971, 1171}, tileIDs)
 }
