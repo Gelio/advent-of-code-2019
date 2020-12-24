@@ -162,3 +162,27 @@ func TestAssembler(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkAssembler(b *testing.B) {
+	for _, tt := range cases {
+		b.Run(tt.name, func(b *testing.B) {
+			input, err := tt.getInput()
+
+			require.NoError(b, err, "cannot read input")
+
+			rawTiles := testcases.SplitTestCaseLines(input)
+
+			var tiles []tile.Tile
+			for _, rawTile := range rawTiles {
+				tile, err := tile.Parse(rawTile)
+				require.NoError(b, err, "cannot parse tiles")
+
+				tiles = append(tiles, tile)
+			}
+
+			for i := 0; i < b.N; i++ {
+				Assemble(tiles)
+			}
+		})
+	}
+}
