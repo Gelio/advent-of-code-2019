@@ -1,33 +1,29 @@
 use std::io;
 
 fn main() {
-    let masses = parse_numbers();
+    let masses = parse_numbers().expect("Cannot parse numbers");
 
     let sum: i64 = masses.into_iter().map(get_total_fuel_required).sum();
 
     println!("Sum: {}", sum);
 }
 
-fn parse_numbers() -> Vec<i64> {
+fn parse_numbers() -> Result<Vec<i64>, String> {
     let mut numbers: Vec<i64> = Vec::new();
 
     loop {
         let mut line = String::new();
-        let result = io::stdin().read_line(&mut line);
-        if result.is_err() {
-            break;
+        match io::stdin().read_line(&mut line) {
+            Ok(0) => break,
+            Ok(_) => match line.trim().parse() {
+                Ok(number) => numbers.push(number),
+                Err(e) => return Err(format!("cannot parse line {}: {}", line, e.to_string())),
+            },
+            Err(e) => return Err(format!("error when reading line: {}", e.to_string())),
         }
-
-        let trimmed_line = line.trim();
-        if trimmed_line.is_empty() {
-            break;
-        }
-
-        let number = trimmed_line.parse::<i64>().expect("Not a valid number");
-        numbers.push(number);
     }
 
-    numbers
+    Ok(numbers)
 }
 
 fn get_fuel_required(mass: i64) -> i64 {
