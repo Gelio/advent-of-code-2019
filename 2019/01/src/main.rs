@@ -1,11 +1,14 @@
 use std::io;
 
 fn main() {
-    let masses = parse_numbers().expect("Cannot parse numbers");
+    let masses = parse_numbers();
 
-    let sum: i64 = masses.into_iter().map(get_total_fuel_required).sum();
+    let sum = masses.map(|v| -> i64 { v.into_iter().map(get_total_fuel_required).sum() });
 
-    println!("Sum: {}", sum);
+    match sum {
+        Ok(sum) => println!("Sum: {}", sum),
+        Err(e) => println!("Error: {}", e),
+    }
 }
 
 fn parse_numbers() -> Result<Vec<i64>, String> {
