@@ -14,6 +14,6 @@ fn main() {
 
     println!(
         "Result A: {}",
-        aoc_2019_07::MaxSequenceFinder::find_max_signal(computer_memory)
+        aoc_2019_07::part_a::MaxSequenceFinder::find_max_signal(computer_memory)
     );
 }
