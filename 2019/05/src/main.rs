@@ -11,10 +11,13 @@ fn main() {
         .map(|x| x.parse().expect(&format!("Cannot parse number {}", x)))
         .collect();
 
-    let input = vec![1];
-
-    let mut computer = Computer::new(memory, input);
+    let mut computer = Computer::new(memory.clone(), vec![1]);
     computer.run();
 
-    println!("Result: {:?}", computer.output);
+    println!("Result A: {:?}", computer.output);
+
+    let mut computer = Computer::new(memory, vec![5]);
+    computer.run();
+
+    println!("Result B: {:?}", computer.output);
 }
