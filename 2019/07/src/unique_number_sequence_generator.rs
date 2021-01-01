@@ -1,8 +1,8 @@
 pub struct UniqueNumberSequenceGenerator {
-    phase_sequence: Vec<usize>,
-    used_phase_settings: Vec<bool>,
-    phase_settings_range: (usize, usize),
-    possible_phase_settings: Vec<Vec<usize>>,
+    num_sequence: Vec<usize>,
+    used_numbers: Vec<bool>,
+    numbers_range: (usize, usize),
+    possible_numbers_for_places: Vec<Vec<usize>>,
     sequence_len: usize,
 }
 
@@ -10,8 +10,8 @@ impl Iterator for UniqueNumberSequenceGenerator {
     type Item = Vec<usize>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.get_next_phase_setting() {
-            return Some(self.phase_sequence.clone());
+        if self.get_next_sequence() {
+            return Some(self.num_sequence.clone());
         }
 
         None
@@ -21,49 +21,49 @@ impl Iterator for UniqueNumberSequenceGenerator {
 impl UniqueNumberSequenceGenerator {
     pub fn new(range: (usize, usize), sequence_len: usize) -> Self {
         Self {
-            phase_sequence: Vec::new(),
-            phase_settings_range: range,
-            used_phase_settings: vec![false; range.1 + 1],
+            num_sequence: Vec::new(),
+            numbers_range: range,
+            used_numbers: vec![false; range.1 + 1],
             sequence_len,
-            possible_phase_settings: vec![(range.0..=range.1).rev().collect()],
+            possible_numbers_for_places: vec![(range.0..=range.1).rev().collect()],
         }
     }
 
-    fn get_next_phase_setting(&mut self) -> bool {
+    fn get_next_sequence(&mut self) -> bool {
         loop {
-            self.phase_sequence.pop().and_then(|s| {
-                self.used_phase_settings[s] = false;
+            self.num_sequence.pop().and_then(|s| {
+                self.used_numbers[s] = false;
                 Some(s)
             });
 
             loop {
-                let possible_phase_settings = match self.possible_phase_settings.last_mut() {
+                let possible_numbers = match self.possible_numbers_for_places.last_mut() {
                     Some(x) => x,
-                    // No possible settings
+                    // No possible numbers in the whole sequence
                     None => return false,
                 };
 
-                let phase_setting = match possible_phase_settings.pop() {
+                let num = match possible_numbers.pop() {
                     Some(x) => x,
                     None => {
-                        // No possibilies left for the current amplifier
-                        self.possible_phase_settings.pop();
+                        // No possibilies left in the current place
+                        self.possible_numbers_for_places.pop();
                         break;
                     }
                 };
 
-                self.phase_sequence.push(phase_setting);
-                self.used_phase_settings[phase_setting] = true;
+                self.num_sequence.push(num);
+                self.used_numbers[num] = true;
 
-                if self.phase_sequence.len() != self.sequence_len {
-                    let possible_next_phase_settings = (self.phase_settings_range.0
-                        ..=self.phase_settings_range.1)
+                if self.num_sequence.len() != self.sequence_len {
+                    let possible_numbers_for_next_place = (self.numbers_range.0
+                        ..=self.numbers_range.1)
                         .rev()
-                        .filter(|x| !self.used_phase_settings[*x])
+                        .filter(|x| !self.used_numbers[*x])
                         .collect();
 
-                    self.possible_phase_settings
-                        .push(possible_next_phase_settings);
+                    self.possible_numbers_for_places
+                        .push(possible_numbers_for_next_place);
 
                     continue;
                 }
