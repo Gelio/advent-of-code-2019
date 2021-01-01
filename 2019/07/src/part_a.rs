@@ -1,6 +1,6 @@
-use std::{cell::RefCell, mem, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
-use aoc_2019_05::{Computer, Instruction};
+use aoc_2019_05::Computer;
 
 const AMPLIFIERS_COUNT: usize = 5;
 
@@ -34,7 +34,7 @@ impl MaxSequenceFinder {
             let input = vec![i as isize, last_input_signal];
             let mut computer =
                 Computer::new(self.computer_memory.clone(), Rc::new(RefCell::new(input)));
-            computer.run_till(mem::discriminant(&Instruction::Halt));
+            computer.run_till_halt();
             let output_signal = *computer.output.borrow().get(0).unwrap();
 
             self.phase_sequence.push(i);
