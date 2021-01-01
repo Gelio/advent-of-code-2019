@@ -1,12 +1,9 @@
-use std::{
-    cell::RefCell,
-    mem::{self, Discriminant},
-    rc::Rc,
-};
+use std::{cell::RefCell, rc::Rc};
 
 enum ArgMode {
     Position,
     Immediate,
+    Relative,
 }
 
 impl ArgMode {
@@ -14,6 +11,7 @@ impl ArgMode {
         match c {
             '0' => ArgMode::Position,
             '1' => ArgMode::Immediate,
+            '2' => ArgMode::Relative,
             _ => panic!("Invalid arg mode {}", c),
         }
     }
@@ -55,13 +53,42 @@ pub enum Instruction {
         arg2: isize,
         out: usize,
     },
+    AdjustRelativeBase {
+        change: isize,
+    },
     Halt,
 }
 
-pub struct Computer {
+struct ComputerRAM {
     memory: Vec<isize>,
+}
+
+impl ComputerRAM {
+    fn get(&mut self, index: usize) -> isize {
+        match self.memory.get(index) {
+            Some(x) => *x,
+            None => {
+                self.memory.resize(index + 1, 0);
+
+                0
+            }
+        }
+    }
+
+    fn set(&mut self, index: usize, val: isize) {
+        if self.memory.len() <= index {
+            self.memory.resize(index + 1, 0);
+        }
+
+        self.memory[index] = val;
+    }
+}
+
+pub struct Computer {
+    ram: ComputerRAM,
     input: Rc<RefCell<Vec<isize>>>,
     input_index: usize,
+    relative_base: isize,
     pub output: Rc<RefCell<Vec<isize>>>,
     ip: usize,
 }
@@ -77,10 +104,11 @@ impl Computer {
         output: Rc<RefCell<Vec<isize>>>,
     ) -> Self {
         Self {
-            memory,
+            ram: ComputerRAM { memory },
             input,
             output,
             input_index: 0,
+            relative_base: 0,
             ip: 0,
         }
     }
@@ -89,11 +117,9 @@ impl Computer {
         Self::new(memory, Rc::new(RefCell::new(Vec::new())))
     }
 
-    pub fn run_till(&mut self, final_instr: Discriminant<Instruction>) {
+    pub fn run_till_halt(&mut self) {
         loop {
-            let instr = self.parse_and_exec_once();
-
-            if mem::discriminant(&instr) == final_instr {
+            if let Instruction::Halt = self.parse_and_exec_once() {
                 break;
             }
         }
@@ -109,17 +135,18 @@ impl Computer {
     fn exec(&mut self, instr: &Instruction) {
         match *instr {
             Instruction::Add { arg1, arg2, out } => {
-                self.memory[out] = arg1 + arg2;
+                self.ram.set(out, arg1 + arg2);
             }
             Instruction::Multiply { arg1, arg2, out } => {
-                self.memory[out] = arg1 * arg2;
+                self.ram.set(out, arg1 * arg2);
             }
             Instruction::ReadInput { to } => {
-                self.memory[to] = *self
+                let value_read = *self
                     .input
                     .borrow()
                     .get(self.input_index)
                     .expect("Input too short");
+                self.ram.set(to, value_read);
                 self.input_index += 1;
             }
             Instruction::WriteOutput { val } => {
@@ -137,18 +164,21 @@ impl Computer {
             }
             Instruction::LessThan { arg1, arg2, out } => {
                 let result = if arg1 < arg2 { 1 } else { 0 };
-                self.memory[out] = result;
+                self.ram.set(out, result);
             }
             Instruction::Equals { arg1, arg2, out } => {
                 let result = if arg1 == arg2 { 1 } else { 0 };
-                self.memory[out] = result;
+                self.ram.set(out, result);
+            }
+            Instruction::AdjustRelativeBase { change } => {
+                self.relative_base += change;
             }
             Instruction::Halt => {}
         }
     }
 
     fn parse_instruction(&mut self) -> Instruction {
-        let instr = self.memory[self.ip];
+        let instr = self.ram.get(self.ip);
         let instr_digits = format!("{:0>5}", instr.to_string());
 
         let opcode = instr_digits.get(3..).unwrap();
@@ -236,6 +266,15 @@ impl Computer {
 
                 instr
             }
+            "09" => {
+                let instr = Instruction::AdjustRelativeBase {
+                    change: self.get_arg(&instr_digits, 1),
+                };
+
+                self.ip += 2;
+
+                instr
+            }
             "99" => {
                 self.ip += 1;
 
@@ -245,26 +284,27 @@ impl Computer {
         }
     }
 
-    fn get_arg(&self, instr_digits: &str, arg_index: usize) -> isize {
+    fn get_arg(&mut self, instr_digits: &str, arg_index: usize) -> isize {
         let arg_mode = instr_digits.as_bytes()[3 - arg_index] as char;
         let arg_mode = ArgMode::parse(arg_mode);
 
         self.get_arg_with_mode(arg_mode, arg_index)
     }
 
-    fn get_arg_with_mode(&self, mode: ArgMode, arg_index: usize) -> isize {
-        let v = self.memory[self.ip + arg_index];
+    fn get_arg_with_mode(&mut self, mode: ArgMode, arg_index: usize) -> isize {
+        let v = self.ram.get(self.ip + arg_index);
 
         match mode {
             ArgMode::Immediate => v,
-            ArgMode::Position => self.memory[v as usize],
+            ArgMode::Position => self.ram.get(v as usize),
+            ArgMode::Relative => self.ram.get((v + self.relative_base) as usize),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::{cell::RefCell, mem, rc::Rc};
+    use std::{cell::RefCell, rc::Rc};
 
     use super::{Computer, Instruction};
 
@@ -297,11 +337,11 @@ mod tests {
     fn computer_jump_position_mode() {
         let input = vec![3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9];
         let mut computer = Computer::new(input.clone(), Rc::new(RefCell::new(vec![0])));
-        computer.run_till(mem::discriminant(&Instruction::Halt));
+        computer.run_till_halt();
         assert_eq!(computer.output.borrow().clone(), vec![0], "jump 0 test");
 
         let mut computer = Computer::new(input, Rc::new(RefCell::new(vec![5])));
-        computer.run_till(mem::discriminant(&Instruction::Halt));
+        computer.run_till_halt();
         assert_eq!(computer.output.borrow().clone(), vec![1], "jump non-0 test");
     }
 
@@ -309,11 +349,11 @@ mod tests {
     fn computer_jump_immediate_mode() {
         let input = vec![3, 3, 1105, -1, 9, 1101, 0, 0, 12, 4, 12, 99, 1];
         let mut computer = Computer::new(input.clone(), Rc::new(RefCell::new(vec![0])));
-        computer.run_till(mem::discriminant(&Instruction::Halt));
+        computer.run_till_halt();
         assert_eq!(computer.output.borrow().clone(), vec![0], "jump 0 test");
 
         let mut computer = Computer::new(input, Rc::new(RefCell::new(vec![5])));
-        computer.run_till(mem::discriminant(&Instruction::Halt));
+        computer.run_till_halt();
         assert_eq!(computer.output.borrow().clone(), vec![1], "jump non-0 test");
     }
 
@@ -325,15 +365,51 @@ mod tests {
             20, 1105, 1, 46, 98, 99,
         ];
         let mut computer = Computer::new(input.clone(), Rc::new(RefCell::new(vec![7])));
-        computer.run_till(mem::discriminant(&Instruction::Halt));
+        computer.run_till_halt();
         assert_eq!(computer.output.borrow().clone(), vec![999], "below 8");
 
         let mut computer = Computer::new(input.clone(), Rc::new(RefCell::new(vec![8])));
-        computer.run_till(mem::discriminant(&Instruction::Halt));
+        computer.run_till_halt();
         assert_eq!(computer.output.borrow().clone(), vec![1000], "8");
 
         let mut computer = Computer::new(input, Rc::new(RefCell::new(vec![9])));
-        computer.run_till(mem::discriminant(&Instruction::Halt));
+        computer.run_till_halt();
         assert_eq!(computer.output.borrow().clone(), vec![1001], "above 9");
+    }
+
+    #[test]
+    fn computer_relative_base_clone_input() {
+        let input = vec![
+            109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99,
+        ];
+        let mut computer = Computer::new(input.clone(), Rc::new(RefCell::new(vec![])));
+        computer.run_till_halt();
+        assert_eq!(computer.output.borrow().clone(), input);
+    }
+
+    #[test]
+    fn computer_output_16_digit_number() {
+        let input = vec![1102, 34915192, 34915192, 7, 4, 7, 99, 0];
+        let mut computer = Computer::new(input.clone(), Rc::new(RefCell::new(vec![])));
+        computer.run_till_halt();
+        let output = computer.output.borrow();
+
+        assert_eq!(output.len(), 1, "invalid length");
+
+        let output_num = output[0].to_string();
+        assert_eq!(output_num.len(), 16, "invalid output number");
+    }
+
+    #[test]
+    fn computer_handle_large_number() {
+        let input = vec![104, 1125899906842624, 99];
+        let mut computer = Computer::new(input.clone(), Rc::new(RefCell::new(vec![])));
+        computer.run_till_halt();
+        let output = computer.output.borrow();
+
+        assert_eq!(output.len(), 1, "invalid length");
+
+        let output_num = output[0];
+        assert_eq!(output_num, 1125899906842624, "invalid output number");
     }
 }
