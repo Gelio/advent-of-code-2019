@@ -1,5 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
+#[derive(PartialEq)]
 enum ArgMode {
     Position,
     Immediate,
@@ -188,7 +189,7 @@ impl Computer {
                 let instr = Instruction::Add {
                     arg1: self.get_arg(&instr_digits, 1),
                     arg2: self.get_arg(&instr_digits, 2),
-                    out: self.get_arg_with_mode(ArgMode::Immediate, 3) as usize,
+                    out: self.get_addr_arg(&instr_digits, 3),
                 };
 
                 self.ip += 4;
@@ -199,7 +200,7 @@ impl Computer {
                 let instr = Instruction::Multiply {
                     arg1: self.get_arg(&instr_digits, 1),
                     arg2: self.get_arg(&instr_digits, 2),
-                    out: self.get_arg_with_mode(ArgMode::Immediate, 3) as usize,
+                    out: self.get_addr_arg(&instr_digits, 3),
                 };
 
                 self.ip += 4;
@@ -208,7 +209,7 @@ impl Computer {
             }
             "03" => {
                 let instr = Instruction::ReadInput {
-                    to: self.get_arg_with_mode(ArgMode::Immediate, 1) as usize,
+                    to: self.get_addr_arg(&instr_digits, 1),
                 };
 
                 self.ip += 2;
@@ -248,7 +249,7 @@ impl Computer {
                 let instr = Instruction::LessThan {
                     arg1: self.get_arg(&instr_digits, 1),
                     arg2: self.get_arg(&instr_digits, 2),
-                    out: self.get_arg_with_mode(ArgMode::Immediate, 3) as usize,
+                    out: self.get_addr_arg(&instr_digits, 3),
                 };
 
                 self.ip += 4;
@@ -259,7 +260,7 @@ impl Computer {
                 let instr = Instruction::Equals {
                     arg1: self.get_arg(&instr_digits, 1),
                     arg2: self.get_arg(&instr_digits, 2),
-                    out: self.get_arg_with_mode(ArgMode::Immediate, 3) as usize,
+                    out: self.get_addr_arg(&instr_digits, 3),
                 };
 
                 self.ip += 4;
@@ -299,6 +300,18 @@ impl Computer {
             ArgMode::Position => self.ram.get(v as usize),
             ArgMode::Relative => self.ram.get((v + self.relative_base) as usize),
         }
+    }
+
+    fn get_addr_arg(&mut self, instr_digits: &str, arg_index: usize) -> usize {
+        let arg_mode = instr_digits.as_bytes()[3 - arg_index] as char;
+        let arg_mode = ArgMode::parse(arg_mode);
+
+        let mut addr = self.get_arg_with_mode(ArgMode::Immediate, arg_index);
+        if arg_mode == ArgMode::Relative {
+            addr += self.relative_base;
+        }
+
+        addr as usize
     }
 }
 
