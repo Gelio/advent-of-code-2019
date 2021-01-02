@@ -6,11 +6,8 @@ fn main() {
     let mut buffer = String::new();
     stdin().read_line(&mut buffer).unwrap();
 
-    let computer_memory: Vec<isize> = buffer
-        .trim()
-        .split(",")
-        .map(|c| c.parse().expect(&format!("Cannot parse {}", c).to_owned()))
-        .collect();
+    let computer_memory: Vec<isize> =
+        intcode_computer::program::parse_from_string(&buffer).unwrap();
 
     println!(
         "Result A: {}",
