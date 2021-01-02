@@ -1,0 +1,10 @@
+[package]
+name = "aoc-2019-09"
+version = "0.1.0"
+authors = ["Grzegorz Rozdzialik <voreny.gelio@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+aoc-2019-05 = { path = "../05" }
