@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use aoc_2019_05::{Computer, Instruction};
+use intcode_computer::{Computer, Instruction};
 
 use crate::unique_number_sequence_generator::UniqueNumberSequenceGenerator;
 
@@ -49,7 +49,7 @@ pub fn part_b(computer_memory: Vec<isize>) -> isize {
             }
         }
 
-        let output = *computers.last().unwrap().output.borrow().last().unwrap();
+        let output = *computers.last().unwrap().output().last().unwrap();
         if output > max_output {
             max_output = output;
         }

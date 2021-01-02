@@ -1,96 +1,14 @@
 use std::{cell::RefCell, rc::Rc};
 
-#[derive(PartialEq)]
-enum ArgMode {
-    Position,
-    Immediate,
-    Relative,
-}
-
-impl ArgMode {
-    fn parse(c: char) -> Self {
-        match c {
-            '0' => ArgMode::Position,
-            '1' => ArgMode::Immediate,
-            '2' => ArgMode::Relative,
-            _ => panic!("Invalid arg mode {}", c),
-        }
-    }
-}
-
-#[derive(PartialEq, Debug)]
-pub enum Instruction {
-    Add {
-        arg1: isize,
-        arg2: isize,
-        out: usize,
-    },
-    Multiply {
-        arg1: isize,
-        arg2: isize,
-        out: usize,
-    },
-    ReadInput {
-        to: usize,
-    },
-    WriteOutput {
-        val: isize,
-    },
-    JumpIfTrue {
-        arg: isize,
-        destination: usize,
-    },
-    JumpIfFalse {
-        arg: isize,
-        destination: usize,
-    },
-    LessThan {
-        arg1: isize,
-        arg2: isize,
-        out: usize,
-    },
-    Equals {
-        arg1: isize,
-        arg2: isize,
-        out: usize,
-    },
-    AdjustRelativeBase {
-        change: isize,
-    },
-    Halt,
-}
-
-struct ComputerRAM {
-    memory: Vec<isize>,
-}
-
-impl ComputerRAM {
-    fn get(&mut self, index: usize) -> isize {
-        match self.memory.get(index) {
-            Some(x) => *x,
-            None => {
-                self.memory.resize(index + 1, 0);
-
-                0
-            }
-        }
-    }
-
-    fn set(&mut self, index: usize, val: isize) {
-        if self.memory.len() <= index {
-            self.memory.resize(index + 1, 0);
-        }
-
-        self.memory[index] = val;
-    }
-}
+use crate::instruction::{ArgMode, Instruction};
+use crate::ram::RAM;
 
 pub struct Computer {
-    ram: ComputerRAM,
+    ram: RAM,
     input: Rc<RefCell<Vec<isize>>>,
     input_index: usize,
     relative_base: isize,
-    pub output: Rc<RefCell<Vec<isize>>>,
+    output: Rc<RefCell<Vec<isize>>>,
     ip: usize,
 }
 
@@ -100,12 +18,12 @@ impl Computer {
     }
 
     pub fn with_output(
-        memory: Vec<isize>,
+        program: Vec<isize>,
         input: Rc<RefCell<Vec<isize>>>,
         output: Rc<RefCell<Vec<isize>>>,
     ) -> Self {
         Self {
-            ram: ComputerRAM { memory },
+            ram: RAM::new(program),
             input,
             output,
             input_index: 0,
@@ -119,11 +37,7 @@ impl Computer {
     }
 
     pub fn run_till_halt(&mut self) {
-        loop {
-            if let Instruction::Halt = self.parse_and_exec_once() {
-                break;
-            }
-        }
+        while self.parse_and_exec_once() != Instruction::Halt {}
     }
 
     pub fn parse_and_exec_once(&mut self) -> Instruction {
@@ -131,6 +45,10 @@ impl Computer {
         self.exec(&instr);
 
         instr
+    }
+
+    pub fn output(&self) -> std::cell::Ref<Vec<isize>> {
+        self.output.borrow()
     }
 
     fn exec(&mut self, instr: &Instruction) {
@@ -319,10 +237,12 @@ impl Computer {
 mod tests {
     use std::{cell::RefCell, rc::Rc};
 
-    use super::{Computer, Instruction};
+    use crate::instruction::Instruction;
+
+    use super::Computer;
 
     #[test]
-    fn computer_correctly_parses_instructions() {
+    fn correctly_parses_basic_multiply_instruction() {
         let mut computer = Computer::with_empty_input(vec![1002, 4, 3, 4, 33]);
 
         let instr = computer.parse_instruction();
@@ -337,7 +257,7 @@ mod tests {
     }
 
     #[test]
-    fn computer_correctly_invokes_instructions() {
+    fn correctly_invokes_basic_instructions() {
         let mut computer = Computer::with_empty_input(vec![1002, 4, 3, 4, 33]);
 
         computer.parse_and_exec_once();
@@ -347,31 +267,31 @@ mod tests {
     }
 
     #[test]
-    fn computer_jump_position_mode() {
+    fn jump_position_mode() {
         let input = vec![3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9];
         let mut computer = Computer::new(input.clone(), Rc::new(RefCell::new(vec![0])));
         computer.run_till_halt();
-        assert_eq!(computer.output.borrow().clone(), vec![0], "jump 0 test");
+        assert_eq!(computer.output().clone(), vec![0], "jump 0 test");
 
         let mut computer = Computer::new(input, Rc::new(RefCell::new(vec![5])));
         computer.run_till_halt();
-        assert_eq!(computer.output.borrow().clone(), vec![1], "jump non-0 test");
+        assert_eq!(computer.output().clone(), vec![1], "jump non-0 test");
     }
 
     #[test]
-    fn computer_jump_immediate_mode() {
+    fn jump_immediate_mode() {
         let input = vec![3, 3, 1105, -1, 9, 1101, 0, 0, 12, 4, 12, 99, 1];
         let mut computer = Computer::new(input.clone(), Rc::new(RefCell::new(vec![0])));
         computer.run_till_halt();
-        assert_eq!(computer.output.borrow().clone(), vec![0], "jump 0 test");
+        assert_eq!(computer.output().clone(), vec![0], "jump 0 test");
 
         let mut computer = Computer::new(input, Rc::new(RefCell::new(vec![5])));
         computer.run_till_halt();
-        assert_eq!(computer.output.borrow().clone(), vec![1], "jump non-0 test");
+        assert_eq!(computer.output().clone(), vec![1], "jump non-0 test");
     }
 
     #[test]
-    fn computer_part_b_larger_example() {
+    fn part_b_larger_example() {
         let input = vec![
             3, 21, 1008, 21, 8, 20, 1005, 20, 22, 107, 8, 21, 20, 1006, 20, 31, 1106, 0, 36, 98, 0,
             0, 1002, 21, 125, 20, 4, 20, 1105, 1, 46, 104, 999, 1105, 1, 46, 1101, 1000, 1, 20, 4,
@@ -379,33 +299,33 @@ mod tests {
         ];
         let mut computer = Computer::new(input.clone(), Rc::new(RefCell::new(vec![7])));
         computer.run_till_halt();
-        assert_eq!(computer.output.borrow().clone(), vec![999], "below 8");
+        assert_eq!(computer.output().clone(), vec![999], "below 8");
 
         let mut computer = Computer::new(input.clone(), Rc::new(RefCell::new(vec![8])));
         computer.run_till_halt();
-        assert_eq!(computer.output.borrow().clone(), vec![1000], "8");
+        assert_eq!(computer.output().clone(), vec![1000], "8");
 
         let mut computer = Computer::new(input, Rc::new(RefCell::new(vec![9])));
         computer.run_till_halt();
-        assert_eq!(computer.output.borrow().clone(), vec![1001], "above 9");
+        assert_eq!(computer.output().clone(), vec![1001], "above 9");
     }
 
     #[test]
-    fn computer_relative_base_clone_input() {
+    fn relative_base_clone_input() {
         let input = vec![
             109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99,
         ];
         let mut computer = Computer::new(input.clone(), Rc::new(RefCell::new(vec![])));
         computer.run_till_halt();
-        assert_eq!(computer.output.borrow().clone(), input);
+        assert_eq!(computer.output().clone(), input);
     }
 
     #[test]
-    fn computer_output_16_digit_number() {
+    fn output_16_digit_number() {
         let input = vec![1102, 34915192, 34915192, 7, 4, 7, 99, 0];
         let mut computer = Computer::new(input.clone(), Rc::new(RefCell::new(vec![])));
         computer.run_till_halt();
-        let output = computer.output.borrow();
+        let output = computer.output();
 
         assert_eq!(output.len(), 1, "invalid length");
 
@@ -414,7 +334,7 @@ mod tests {
     }
 
     #[test]
-    fn computer_handle_large_number() {
+    fn handle_large_numbers() {
         let input = vec![104, 1125899906842624, 99];
         let mut computer = Computer::new(input.clone(), Rc::new(RefCell::new(vec![])));
         computer.run_till_halt();
