@@ -13,49 +13,61 @@ impl<'a> Display for ParseError<'a> {
     }
 }
 
-type OrbitsGraph<'a> = HashMap<&'a str, Vec<&'a str>>;
-
-pub fn parse_orbits<'a>(
-    lines: impl Iterator<Item = &'a str>,
-) -> Result<OrbitsGraph<'a>, ParseError<'a>> {
-    let mut orbits_graph: OrbitsGraph = HashMap::new();
-
-    let parsed_lines: Vec<_> = lines
-        .map(|line| {
-            let parts: Vec<_> = line.split(')').collect();
-            if parts.len() != 2 {
-                Err(ParseError { invalid_line: line })
-            } else {
-                Ok((parts[0], parts[1]))
-            }
-        })
-        .collect::<Result<_, _>>()?;
-
-    parsed_lines.into_iter().for_each(|(from, to)| {
-        orbits_graph
-            .entry(from)
-            .and_modify(|v| v.push(to))
-            .or_insert_with(|| vec![to]);
-    });
-
-    Ok(orbits_graph)
+pub struct OrbitsGraph<'a> {
+    // An edge exists from the center (the object being orbitted) to the object that orbits
+    // e.g. COM)B
+    // edges["COM"] = vec!["B"]
+    edges: HashMap<&'a str, Vec<&'a str>>,
+    reverse_edges: HashMap<&'a str, Vec<&'a str>>,
 }
 
-// Answer for part A. Counts the number of stars that orbit another star
-pub fn get_total_orbits<'a>(
-    orbits_graph: &OrbitsGraph<'a>,
-    star: &str,
-    distance_from_center: i32,
-) -> i32 {
-    let default_orbiting_stars = Vec::new();
-    let orbiting_stars = orbits_graph.get(star).unwrap_or(&default_orbiting_stars);
+impl<'a> OrbitsGraph<'a> {
+    pub fn parse(lines: impl Iterator<Item = &'a str>) -> Result<OrbitsGraph<'a>, ParseError<'a>> {
+        let mut orbits_graph = OrbitsGraph {
+            edges: HashMap::new(),
+            reverse_edges: HashMap::new(),
+        };
 
-    let nested_orbits: i32 = orbiting_stars
-        .into_iter()
-        .map(|star| get_total_orbits(orbits_graph, *star, distance_from_center + 1))
-        .sum();
+        let parsed_lines: Vec<_> = lines
+            .map(|line| {
+                let parts: Vec<_> = line.split(')').collect();
+                if parts.len() != 2 {
+                    Err(ParseError { invalid_line: line })
+                } else {
+                    Ok((parts[0], parts[1]))
+                }
+            })
+            .collect::<Result<_, _>>()?;
 
-    distance_from_center + nested_orbits
+        parsed_lines.into_iter().for_each(|(from, to)| {
+            orbits_graph
+                .edges
+                .entry(from)
+                .and_modify(|v| v.push(to))
+                .or_insert_with(|| vec![to]);
+
+            orbits_graph
+                .reverse_edges
+                .entry(to)
+                .and_modify(|v| v.push(from))
+                .or_insert_with(|| vec![from]);
+        });
+
+        Ok(orbits_graph)
+    }
+
+    // Answer for part A. Counts the number of stars that orbit another star
+    pub fn get_total_orbits(&self, star: &str, distance_from_center: i32) -> i32 {
+        let default_orbiting_stars = Vec::new();
+        let orbiting_stars = self.edges.get(star).unwrap_or(&default_orbiting_stars);
+
+        let nested_orbits: i32 = orbiting_stars
+            .into_iter()
+            .map(|star| self.get_total_orbits(*star, distance_from_center + 1))
+            .sum();
+
+        distance_from_center + nested_orbits
+    }
 }
 
 #[cfg(test)]
@@ -66,7 +78,7 @@ mod tests {
     fn error_when_invalid_orbits() {
         let input = vec!["a)b", "not a valid orbit"];
 
-        let res = parse_orbits(input.into_iter());
+        let res = OrbitsGraph::parse(input.into_iter());
 
         assert!(res.is_err());
     }
@@ -75,11 +87,11 @@ mod tests {
     fn correctly_parses_orbits_graph() {
         let input = vec!["a)b", "b)c", "a)c"];
 
-        let res = parse_orbits(input.into_iter()).expect("cannot parse orbits");
+        let res = OrbitsGraph::parse(input.into_iter()).expect("cannot parse orbits");
 
-        assert_eq!(res.len(), 2);
-        assert_eq!(res["a"], vec!["b", "c"]);
-        assert_eq!(res["b"], vec!["c"]);
+        assert_eq!(res.edges.len(), 2);
+        assert_eq!(res.edges["a"], vec!["b", "c"]);
+        assert_eq!(res.edges["b"], vec!["c"]);
     }
 
     #[test]
@@ -98,8 +110,8 @@ mod tests {
         .lines()
         .map(|line| line.trim());
 
-        let orbit_graph = parse_orbits(input.into_iter()).expect("cannot parse orbits");
-        let total_orbits = get_total_orbits(&orbit_graph, "COM", 0);
+        let orbits_graph = OrbitsGraph::parse(input.into_iter()).expect("cannot parse orbits");
+        let total_orbits = orbits_graph.get_total_orbits("COM", 0);
 
         assert_eq!(total_orbits, 42);
     }
