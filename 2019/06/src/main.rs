@@ -8,4 +8,10 @@ fn main() {
     let orbits_graph = OrbitsGraph::parse(input.trim().lines()).expect("Cannot parse orbits");
 
     println!("Result A: {}", orbits_graph.get_total_orbits("COM", 0));
+    println!(
+        "Result B: {}",
+        orbits_graph
+            .get_distance("COM", "YOU", "SAN")
+            .expect("error in part B")
+    );
 }
