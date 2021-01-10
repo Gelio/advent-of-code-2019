@@ -1,14 +1,7 @@
 use crate::asteroid::{get_asteroids_with_visible_neighbors, Asteroid};
 use crate::map::AsteroidMap;
 
-pub fn get_best_asteroid_neighbors_count(map: &AsteroidMap) -> usize {
-    get_best_asteroid(map)
-        .expect("no asteroids found")
-        .visible_asteroids
-        .len()
-}
-
-fn get_best_asteroid(map: &AsteroidMap) -> Option<Asteroid> {
+pub fn get_best_asteroid(map: &AsteroidMap) -> Option<Asteroid> {
     let asteroids = get_asteroids_with_visible_neighbors(&map);
 
     asteroids

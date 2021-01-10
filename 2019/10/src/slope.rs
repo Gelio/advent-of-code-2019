@@ -1,3 +1,7 @@
+use std::f64::consts;
+
+use coord_transforms::prelude::Vector2;
+
 use crate::point::Point;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -17,6 +21,22 @@ impl Slope {
             x: x_diff / gcd,
             y: y_diff / gcd,
         }
+    }
+
+    pub fn angle(&self) -> f64 {
+        // radians start at the X axis
+        let radians =
+            *coord_transforms::d2::cartesian2polar(&Vector2::new(self.x as f64, self.y as f64))
+                .get(1)
+                .unwrap();
+
+        let mut angle = radians / consts::PI * 180.0;
+
+        if angle < 0.0 {
+            angle += 360.0;
+        }
+
+        angle
     }
 }
 
