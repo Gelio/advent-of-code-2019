@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::map::AsteroidMap;
 use crate::point::Point;
 use crate::slope::Slope;
@@ -6,43 +8,39 @@ use crate::slope::Slope;
 pub struct VisibleAsteroid {
     pos: Point,
     distance: i32,
-    slope: Slope,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct Asteroid {
     pub pos: Point,
-    pub visible_asteroids: Vec<VisibleAsteroid>,
+    pub visible_asteroids: HashMap<Slope, VisibleAsteroid>,
 }
 
 pub fn get_asteroids_with_visible_neighbors(map: &AsteroidMap) -> Vec<Asteroid> {
     map.asteroids
         .iter()
         .map(|pos| {
-            let mut visible_asteroids: Vec<VisibleAsteroid> = Vec::new();
+            let mut visible_asteroids: HashMap<Slope, VisibleAsteroid> = HashMap::new();
 
             for other_asteroid_pos in map.asteroids.iter() {
-                let slope = Slope::get(&pos, &other_asteroid_pos);
-                let distance = Point::get_distance(&pos, other_asteroid_pos);
+                if pos == other_asteroid_pos {
+                    continue;
+                }
 
-                match visible_asteroids.binary_search_by(|asteroid| asteroid.slope.cmp(&slope)) {
-                    Ok(index) => {
-                        let asteroid = visible_asteroids.get(index).unwrap();
-                        if asteroid.distance > distance {
-                            visible_asteroids[index] = VisibleAsteroid {
-                                pos: other_asteroid_pos.clone(),
-                                slope,
-                                distance,
-                            };
-                        }
-                    }
-                    Err(possible_index) => visible_asteroids.insert(
-                        possible_index,
-                        VisibleAsteroid {
-                            pos: other_asteroid_pos.clone(),
+                let slope = Slope::get(pos, other_asteroid_pos);
+                let distance = Point::get_distance(pos, other_asteroid_pos);
+
+                match visible_asteroids.get(&slope) {
+                    Some(asteroid) if asteroid.distance < distance => {}
+                    _ => {
+                        visible_asteroids.insert(
                             slope,
-                            distance,
-                        },
-                    ),
+                            VisibleAsteroid {
+                                pos: other_asteroid_pos.clone(),
+                                distance,
+                            },
+                        );
+                    }
                 };
             }
 
