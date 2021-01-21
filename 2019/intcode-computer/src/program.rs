@@ -21,7 +21,7 @@ impl Display for ParseError {
 pub fn parse_from_string(s: &str) -> Result<Vec<isize>, Vec<ParseError>> {
     let (numbers, errors): (Vec<_>, Vec<_>) = s
         .trim()
-        .split(",")
+        .split(',')
         .map(|c| {
             c.parse::<isize>().map_err(|e| ParseError {
                 invalid_char: c.to_owned(),

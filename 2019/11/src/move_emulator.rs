@@ -44,20 +44,17 @@ pub struct MoveEmulator {
     pub robot: Robot,
     pub computer: Computer,
     input: Rc<RefCell<Vec<isize>>>,
-    output: Rc<RefCell<Vec<isize>>>,
 }
 
 impl MoveEmulator {
     pub fn new(program: Vec<isize>) -> Self {
         let input = Rc::default();
-        let output = Rc::default();
-        let computer = Computer::with_output(program, Rc::clone(&input), Rc::clone(&output));
+        let computer = Computer::new(program, Rc::clone(&input));
 
         Self {
             map: HashMap::new(),
             robot: Robot::default(),
             input,
-            output,
             computer,
         }
     }
