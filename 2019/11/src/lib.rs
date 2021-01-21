@@ -1,4 +1,5 @@
 mod direction;
+pub mod map_printer;
 pub mod move_emulator;
-mod point;
+pub mod point;
 mod robot;

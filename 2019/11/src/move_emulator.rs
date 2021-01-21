@@ -39,6 +39,15 @@ impl Into<isize> for &Color {
     }
 }
 
+impl ToString for Color {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Black => " ".into(),
+            Self::White => "X".into(),
+        }
+    }
+}
+
 pub struct MoveEmulator {
     pub map: HashMap<Point, Color>,
     pub robot: Robot,
