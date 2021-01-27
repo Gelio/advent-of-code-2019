@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use regex::Regex;
 
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug, Default)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
@@ -16,7 +16,7 @@ impl Display for Position {
 }
 
 impl Position {
-    fn parse(input: &str) -> Result<Self, String> {
+    pub fn parse(input: &str) -> Result<Self, String> {
         let position_regex = Regex::new(r"^<x=(-?\d+), y=(-?\d+), z=(-?\d+)>$")
             .expect("Could not compile position regexp");
         let captured_groups = position_regex
@@ -45,6 +45,14 @@ impl Position {
             .map_err(|e| format!("cannot parse z in {}: {}", input, e.to_string()))?;
 
         Ok(Self { x, y, z })
+    }
+
+    pub fn add(p1: &Self, p2: &Self) -> Self {
+        Self {
+            x: p1.x + p2.x,
+            y: p1.y + p2.y,
+            z: p1.z + p2.z,
+        }
     }
 }
 
@@ -110,5 +118,14 @@ mod tests {
 
             assert!(res.is_err());
         })
+    }
+
+    #[test]
+    fn adds_correctly() {
+        let p1 = Position { x: 1, y: 2, z: 3 };
+        let p2 = Position { x: 3, y: 2, z: 1 };
+
+        let result = Position::add(&p1, &p2);
+        assert_eq!(result, Position { x: 4, y: 4, z: 4 });
     }
 }
