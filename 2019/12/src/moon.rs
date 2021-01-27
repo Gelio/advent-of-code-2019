@@ -1,6 +1,8 @@
+use std::hash::Hash;
+
 use crate::position::Position;
 
-#[derive(Clone, PartialEq, Eq, Default, Debug)]
+#[derive(Clone, PartialEq, Eq, Default, Debug, Hash)]
 pub struct Moon {
     position: Position,
     velocity: Position,
@@ -60,4 +62,14 @@ impl Moon {
     pub fn total_energy(&self) -> i32 {
         self.kinetic_energy() * self.potential_energy()
     }
+}
+
+pub fn parse_moons(input: &str) -> Vec<Moon> {
+    input
+        .split("\n")
+        .map(|l| l.trim())
+        .filter(|l| !l.is_empty())
+        .map(|l| Position::parse(l).unwrap())
+        .map(Moon::new)
+        .collect()
 }

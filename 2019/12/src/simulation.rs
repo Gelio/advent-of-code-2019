@@ -1,7 +1,7 @@
 use crate::moon::Moon;
 
 pub struct Simulation {
-    moons: Vec<Moon>,
+    pub moons: Vec<Moon>,
 }
 
 impl Simulation {
@@ -11,21 +11,25 @@ impl Simulation {
 
     pub fn run(&mut self, steps: usize) {
         for _ in 0..steps {
-            for i in 1..self.moons.len() {
-                let (adjusted_moons, moons_to_adjust) = self.moons.split_at_mut(i);
-                let m1 = adjusted_moons
-                    .last_mut()
-                    .expect("cannot get moon to adjust");
+            self.run_single_step();
+        }
+    }
 
-                for m2 in moons_to_adjust {
-                    Moon::adjust_velocities(m1, m2)
-                }
+    pub fn run_single_step(&mut self) {
+        for i in 1..self.moons.len() {
+            let (adjusted_moons, moons_to_adjust) = self.moons.split_at_mut(i);
+            let m1 = adjusted_moons
+                .last_mut()
+                .expect("cannot get moon to adjust");
 
-                m1.apply_velocity()
+            for m2 in moons_to_adjust {
+                Moon::adjust_velocities(m1, m2)
             }
 
-            self.moons.last_mut().unwrap().apply_velocity();
+            m1.apply_velocity()
         }
+
+        self.moons.last_mut().unwrap().apply_velocity();
     }
 
     pub fn total_energy(&self) -> i32 {

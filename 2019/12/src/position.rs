@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use regex::Regex;
 
-#[derive(Clone, PartialEq, Eq, Debug, Default)]
+#[derive(Clone, PartialEq, Eq, Debug, Default, Hash)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
