@@ -62,6 +62,14 @@ impl Moon {
     pub fn total_energy(&self) -> i32 {
         self.kinetic_energy() * self.potential_energy()
     }
+
+    pub fn position(&self) -> &Position {
+        &self.position
+    }
+
+    pub fn velocity(&self) -> &Position {
+        &self.velocity
+    }
 }
 
 pub fn parse_moons(input: &str) -> Vec<Moon> {
