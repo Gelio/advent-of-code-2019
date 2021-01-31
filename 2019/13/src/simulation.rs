@@ -1,7 +1,9 @@
 use std::{
+    cell::RefCell,
     collections::HashMap,
     convert::{TryFrom, TryInto},
     fmt::Display,
+    rc::Rc,
 };
 
 use intcode_computer::Computer;
@@ -24,7 +26,7 @@ impl Display for TileId {
                 TileId::Empty => ' ',
                 TileId::Wall => 'W',
                 TileId::Block => 'X',
-                TileId::HorizontalPaddle => '-',
+                TileId::HorizontalPaddle => '#',
                 TileId::Ball => 'O',
             }
         )
@@ -48,31 +50,67 @@ impl TryFrom<&isize> for TileId {
 
 pub struct Simulation {
     pub tiles: HashMap<(isize, isize), TileId>,
-    computer: Computer,
+    input: Rc<RefCell<Vec<isize>>>,
+    pub score: isize,
+    pub computer: Computer,
 }
 
 impl Simulation {
     pub fn new(program: Vec<isize>) -> Self {
+        let input = Rc::new(RefCell::new(Vec::new()));
         Self {
-            computer: Computer::with_empty_input(program),
+            input: Rc::clone(&input),
+            computer: Computer::new(program, input),
             tiles: HashMap::new(),
+            score: 0,
         }
     }
 
     pub fn execute(&mut self) {
-        self.computer.run_till_halt();
+        let mut output_instruction_id = 0;
+        loop {
+            match self.computer.parse_and_exec_once() {
+                intcode_computer::Instruction::WriteOutput { val: -1 } if self.tiles.is_empty() => {
+                    // Write 2 more pieces of the "score" update
+                    self.computer.parse_and_exec_once();
+                    self.computer.parse_and_exec_once();
+                    break;
+                }
+                intcode_computer::Instruction::WriteOutput { val: 4 }
+                    if output_instruction_id % 3 == 2 && !self.tiles.is_empty() =>
+                {
+                    // Ball printed
+                    break;
+                }
+                intcode_computer::Instruction::Halt => {
+                    break;
+                }
+                intcode_computer::Instruction::WriteOutput { .. } => {
+                    output_instruction_id += 1;
+                }
+                _ => {}
+            }
+        }
 
         let tiles = &mut self.tiles;
+        let score = &mut self.score;
         self.computer
             .output()
             .chunks(3)
             .for_each(|chunk| match chunk {
+                [-1, 0, s] => {
+                    *score = s.clone();
+                }
                 [x, y, tile_id] => {
                     let tile_id: TileId = tile_id.try_into().expect("invalid tile id");
                     tiles.insert((x.clone(), y.clone()), tile_id);
                 }
                 _ => panic!("invalid chunk"),
             });
+    }
+
+    pub fn send_movement(&mut self, v: isize) {
+        self.input.borrow_mut().push(v);
     }
 }
 
