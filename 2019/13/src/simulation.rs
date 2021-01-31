@@ -6,7 +6,7 @@ use std::{
     rc::Rc,
 };
 
-use intcode_computer::Computer;
+use intcode_computer::{Computer, Instruction};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TileId {
@@ -48,6 +48,11 @@ impl TryFrom<&isize> for TileId {
     }
 }
 
+pub struct GameState {
+    pub player_pos: (isize, isize),
+    pub ball_pos: (isize, isize),
+}
+
 pub struct Simulation {
     pub tiles: HashMap<(isize, isize), TileId>,
     input: Rc<RefCell<Vec<isize>>>,
@@ -66,32 +71,22 @@ impl Simulation {
         }
     }
 
-    pub fn execute(&mut self) {
-        let mut output_instruction_id = 0;
-        loop {
-            match self.computer.parse_and_exec_once() {
-                intcode_computer::Instruction::WriteOutput { val: -1 } if self.tiles.is_empty() => {
-                    // Write 2 more pieces of the "score" update
-                    self.computer.parse_and_exec_once();
-                    self.computer.parse_and_exec_once();
-                    break;
+    pub fn execute(&mut self) -> (GameState, Instruction) {
+        let instr = loop {
+            let instr = self.computer.parse_instruction();
+            match instr {
+                intcode_computer::Instruction::ReadInput { .. }
+                | intcode_computer::Instruction::Halt => {
+                    break instr;
                 }
-                intcode_computer::Instruction::WriteOutput { val: 4 }
-                    if output_instruction_id % 3 == 2 && !self.tiles.is_empty() =>
-                {
-                    // Ball printed
-                    break;
+                _ => {
+                    self.computer.exec(&instr);
                 }
-                intcode_computer::Instruction::Halt => {
-                    break;
-                }
-                intcode_computer::Instruction::WriteOutput { .. } => {
-                    output_instruction_id += 1;
-                }
-                _ => {}
             }
-        }
+        };
 
+        let mut player_pos: Option<(isize, isize)> = None;
+        let mut ball_pos: Option<(isize, isize)> = None;
         let tiles = &mut self.tiles;
         let score = &mut self.score;
         self.computer
@@ -103,10 +98,23 @@ impl Simulation {
                 }
                 [x, y, tile_id] => {
                     let tile_id: TileId = tile_id.try_into().expect("invalid tile id");
+                    match tile_id {
+                        TileId::Ball => ball_pos = Some((x.clone(), y.clone())),
+                        TileId::HorizontalPaddle => player_pos = Some((x.clone(), y.clone())),
+                        _ => {}
+                    }
                     tiles.insert((x.clone(), y.clone()), tile_id);
                 }
                 _ => panic!("invalid chunk"),
             });
+
+        (
+            GameState {
+                player_pos: player_pos.expect("player not found"),
+                ball_pos: ball_pos.expect("ball not found"),
+            },
+            instr,
+        )
     }
 
     pub fn send_movement(&mut self, v: isize) {

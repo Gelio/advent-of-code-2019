@@ -51,7 +51,7 @@ impl Computer {
         self.output.borrow()
     }
 
-    fn exec(&mut self, instr: &Instruction) {
+    pub fn exec(&mut self, instr: &Instruction) {
         match *instr {
             Instruction::Add { arg1, arg2, out } => {
                 self.ram.set(out, arg1 + arg2);
@@ -67,6 +67,9 @@ impl Computer {
                     .expect("Input too short");
                 self.ram.set(to, value_read);
                 self.input_index += 1;
+                if self.input.borrow().len() != self.input_index {
+                    println!("mismatch");
+                }
             }
             Instruction::WriteOutput { val } => {
                 self.output.borrow_mut().push(val);
@@ -96,7 +99,7 @@ impl Computer {
         }
     }
 
-    fn parse_instruction(&mut self) -> Instruction {
+    pub fn parse_instruction(&mut self) -> Instruction {
         let instr = self.ram.get(self.ip);
         let instr_digits = format!("{:0>5}", instr.to_string());
 
