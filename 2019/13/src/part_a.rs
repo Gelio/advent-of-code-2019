@@ -1,7 +1,8 @@
 use crate::simulation::{Simulation, TileId};
 
 pub fn solve(program: Vec<isize>) -> usize {
-    let simulation = Simulation::execute(program);
+    let mut simulation = Simulation::new(program);
+    simulation.execute();
 
     simulation
         .tiles
