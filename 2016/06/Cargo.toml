@@ -1,0 +1,6 @@
+[package]
+name = "advent-06"
+version = "0.1.0"
+authors = ["Grzegorz Rozdzialik <voreny.gelio@gmail.com>"]
+
+[dependencies]
